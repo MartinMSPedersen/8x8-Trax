@@ -101,6 +101,13 @@ function render() {
         img.className = prev.forced && showForced ? 'tile forced' : 'tile preview';
         img.draggable = false;
         cell.appendChild(img);
+        // Clicking the previewed (uncommitted) tile cycles to the next candidate
+        // geometry at that cell. Only the anchor tile cycles; forced-cascade
+        // previews are consequences, not choices.
+        if (!prev.forced && humanToMove() && !thinking) {
+          cell.classList.add('playable');
+          cell.addEventListener('click', () => cycleCell(c, r));
+        }
       } else if (placedKind) {
         const img = document.createElement('img');
         const asWin = winner && winCells.has(key) ? winner : null;
@@ -186,6 +193,10 @@ async function cycleCell(c, r) {
   let idx = 0;
   if (previewCell && previewCell.c === c && previewCell.r === r) {
     idx = (previewCell.idx + 1) % options.length;
+  } else if (preview && preview.placed.length && preview.placed[0].c === c && preview.placed[0].r === r) {
+    // a typed preview sits here: continue the cycle from its geometry
+    const cur = options.findIndex((m) => m.n === preview.notation);
+    idx = ((cur >= 0 ? cur : -1) + 1) % options.length;
   }
   previewCell = { c, r, idx };
   const m = options[idx];
