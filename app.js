@@ -254,7 +254,23 @@ async function maybeEngine() {
 // ---------- buttons ----------------------------------------------------------
 
 async function newGame() {
-  if (thinking) { spawnWorker(); $('enginelog').textContent = ''; return; } // cancels the think, re-inits
+  if (thinking) { // ---------- day/night mode ----------------------------------------------------
+// First visit follows the system preference; the toggle overrides and persists.
+const themeBtn = $('themebtn');
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  themeBtn.textContent = t === 'dark' ? '\u2600\ufe0f' : '\ud83c\udf19'; // sun / moon
+}
+let theme = localStorage.getItem('trax-theme')
+  || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+applyTheme(theme);
+themeBtn.addEventListener('click', () => {
+  theme = theme === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('trax-theme', theme);
+  applyTheme(theme);
+});
+
+spawnWorker(); $('enginelog').textContent = ''; return; } // cancels the think, re-inits
   const r = await send('NEW');
   $('enginelog').textContent = '';
   onState(r);
@@ -302,5 +318,21 @@ $('optoutput').addEventListener('change', () => { $('enginepane').hidden = !$('o
 for (const el of document.querySelectorAll('input[name=mode]')) {
   el.addEventListener('change', () => { $('status').textContent = statusLine(); render(); maybeEngine(); });
 }
+
+// ---------- day/night mode ----------------------------------------------------
+// First visit follows the system preference; the toggle overrides and persists.
+const themeBtn = $('themebtn');
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  themeBtn.textContent = t === 'dark' ? '\u2600\ufe0f' : '\ud83c\udf19'; // sun / moon
+}
+let theme = localStorage.getItem('trax-theme')
+  || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+applyTheme(theme);
+themeBtn.addEventListener('click', () => {
+  theme = theme === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('trax-theme', theme);
+  applyTheme(theme);
+});
 
 spawnWorker();

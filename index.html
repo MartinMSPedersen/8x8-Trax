@@ -8,9 +8,10 @@
 </head>
 <body>
 <header>
+  <button id="themebtn" type="button" title="Switch day/night mode" aria-label="Switch day/night mode">&#127769;</button>
   <h1>Trax 8&times;8</h1>
   <p class="sub">
-    <a href="https://en.wikipedia.org/wiki/Trax_(board_game)" target="_blank" rel="noopener">Trax on Wikipedia</a>
+    <a href="https://en.wikipedia.org/wiki/Trax_(board_game)" target="_blank" rel="noopener">Rules and notation at Wikipedia</a>
   </p>
 </header>
 
@@ -18,12 +19,12 @@
   <section id="boardwrap">
     <div id="board" aria-label="Trax board"></div>
     <div id="status">Loading engine&hellip;</div>
+    <div id="hint">Click an empty cell to cycle candidate tiles; Commit (or type a move) to play.</div>
     <div id="entry">
       <input type="text" id="movebox" placeholder="type a move, e.g. B1\ or @0+" autocomplete="off" spellcheck="false">
       <button id="commitbtn" disabled>Commit</button>
       <span id="moveerr" role="alert"></span>
     </div>
-    <div id="hint" class="dim">Click an empty cell to cycle candidate tiles; Commit (or type a move) to play. Forced tiles glow.</div>
   </section>
 
   <aside id="controls">
