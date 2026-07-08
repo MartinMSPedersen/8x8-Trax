@@ -1,0 +1,6 @@
+# edge threats
+W+WBBW+W 5 2 2 0 0 1,0/ 1,3\
+W+WBBWaB+Wa 5 2 2 0 0 1,0/ 1,4+
+Wa+BWaBBWbB+Wb 5 2 2 0 0 1,0+ 1,5+
+WaB+BWaBBW+W 5 2 2 0 0 2,0+ 2,4\
+WaB+BWaBBWbB+BWb 5 2 2 0 0 2,0+ 2,5+
