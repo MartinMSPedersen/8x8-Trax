@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trax 8x8</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Trax 8&times;8</h1>
+  <p class="sub">Rust engine compiled to WebAssembly &mdash;
+    <a href="https://en.wikipedia.org/wiki/Trax_(board_game)" target="_blank" rel="noopener">Trax on Wikipedia</a>
+  </p>
+</header>
+
+<main>
+  <section id="boardwrap">
+    <div id="board" aria-label="Trax board"></div>
+    <div id="status">Loading engine&hellip;</div>
+    <div id="entry">
+      <input type="text" id="movebox" placeholder="type a move, e.g. B1\ or @0+" autocomplete="off" spellcheck="false">
+      <button id="commitbtn" disabled>Commit</button>
+      <span id="moveerr" role="alert"></span>
+    </div>
+    <div id="hint" class="dim">Click an empty cell to cycle candidate tiles; Commit (or type a move) to play. Forced tiles glow.</div>
+  </section>
+
+  <aside id="controls">
+    <fieldset>
+      <legend>Mode</legend>
+      <label><input type="radio" name="mode" value="mb" checked> Machine plays Black</label>
+      <label><input type="radio" name="mode" value="mw"> Machine plays White</label>
+      <label><input type="radio" name="mode" value="mm"> Two Machines</label>
+      <label><input type="radio" name="mode" value="hh"> Human versus Human</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Engine strength</legend>
+      <select id="strength">
+        <option value="5000">Easy (5s)</option>
+        <option value="10000" selected>Medium (10s)</option>
+        <option value="30000">Hard (30s)</option>
+        <option value="60000">Expert (60s)</option>
+        <option value="120000">World Champion (120s)</option>
+      </select>
+    </fieldset>
+
+    <fieldset>
+      <legend>Game</legend>
+      <div class="btnrow">
+        <button id="newbtn">New game</button>
+        <button id="savebtn">Save game</button>
+        <button id="loadbtn">Load game</button>
+        <input type="file" id="loadfile" accept=".trx,.txt" hidden>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Options</legend>
+      <label><input type="checkbox" id="optforced" checked> Show forced moves</label>
+      <label><input type="checkbox" id="optvary" checked> Vary engine play</label>
+      <label><input type="checkbox" id="optoutput"> Show engine output</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Tile size</legend>
+      <select id="tilesize">
+        <option value="small">Small (40px)</option>
+        <option value="medium" selected>Medium (60px)</option>
+        <option value="large">Large (80px)</option>
+      </select>
+    </fieldset>
+
+    <fieldset>
+      <legend>Moves</legend>
+      <div id="history" class="mono"></div>
+    </fieldset>
+
+    <fieldset id="enginepane" hidden>
+      <legend>Engine output</legend>
+      <pre id="enginelog" class="mono"></pre>
+    </fieldset>
+  </aside>
+</main>
+
+<footer class="dim">
+  Knowledge: <span id="knowledge">&hellip;</span> &middot; engine differentially certified against the reference implementation.
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
