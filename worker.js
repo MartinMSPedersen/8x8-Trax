@@ -40,13 +40,14 @@ async function fetchText(url) {
 }
 
 async function boot() {
-  const [wasmBytes, always, never, evalc, ...threatParts] = await Promise.all([
+  const [wasmBytes, always, never, replies, evalc, ...threatParts] = await Promise.all([
     fetch('trax.wasm', { cache: 'no-cache' }).then((r) => {
       if (!r.ok) throw new Error('trax.wasm not found next to index.html');
       return r.arrayBuffer();
     }),
     fetchText('book/alwaysplay.trx'),
     fetchText('book/neverplay.trx'),
+    fetchText('book/replies.txt'),
     fetchText('eval.conf'),
     ...THREAT_FILES.map((f) => fetchText('threat/' + f)),
   ]);
@@ -63,12 +64,12 @@ async function boot() {
   });
   ex = instance.exports;
 
-  const bufs = [threats, always, never, evalc].map(put);
-  const il = ex.tx_init(bufs[0].p, bufs[0].len, bufs[1].p, bufs[1].len, bufs[2].p, bufs[2].len, bufs[3].p, bufs[3].len);
+  const bufs = [threats, always, never, replies, evalc].map(put);
+  const il = ex.tx_init(bufs[0].p, bufs[0].len, bufs[1].p, bufs[1].len, bufs[2].p, bufs[2].len, bufs[3].p, bufs[3].len, bufs[4].p, bufs[4].len);
   const initR = JSON.parse(resp(il));
   bufs.forEach((b) => ex.tx_dealloc(b.p, b.len || 1));
   if (!initR.ok) throw new Error('engine init failed: ' + initR.error);
-  postMessage({ ready: true, threats: initR.threats, book: initR.book });
+  postMessage({ ready: true, threats: initR.threats, book: initR.book, replies: initR.replies || 0 });
 }
 
 const queue = [];
