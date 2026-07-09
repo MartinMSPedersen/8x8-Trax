@@ -65,11 +65,14 @@ function render() {
   const px = SIZES[size];
   const showForced = $('optforced').checked;
 
-  // Grid = bounding box plus one placement ring; empty board = a single ring cell.
+  // Grid = bounding box plus one placement ring - but only on axes that can still
+  // grow: at 8 tiles wide no move can exist left or right of the board, so showing
+  // ring columns there would suggest placements the rules forbid. Same for rows.
   const bb = state.bbox || { minCol: 0, maxCol: 0, minRow: 0, maxRow: 0 };
-  const pad = state.bbox ? 1 : 0;
-  const c0 = bb.minCol - pad, c1 = bb.maxCol + pad;
-  const r0 = bb.minRow - pad, r1 = bb.maxRow + pad;
+  const colPad = state.bbox && (bb.maxCol - bb.minCol + 1) < 8 ? 1 : 0;
+  const rowPad = state.bbox && (bb.maxRow - bb.minRow + 1) < 8 ? 1 : 0;
+  const c0 = bb.minCol - colPad, c1 = bb.maxCol + colPad;
+  const r0 = bb.minRow - rowPad, r1 = bb.maxRow + rowPad;
   const cols = c1 - c0 + 1, rows = r1 - r0 + 1;
   board.style.gridTemplateColumns = `repeat(${cols}, ${px}px)`;
   board.style.gridTemplateRows = `repeat(${rows}, ${px}px)`;
