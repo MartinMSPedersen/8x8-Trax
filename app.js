@@ -34,7 +34,9 @@ function spawnWorker() {
     const d = e.data;
     if (d.fatal) { $('status').textContent = 'Engine failed to load: ' + d.fatal; return; }
     if (d.ready) {
-      queuedKnowledge = `${d.threats} threat pattern(s), ${d.book} book position(s)`;
+      queuedKnowledge = `${d.threats} threat pattern(s), ${d.book} book position(s)`
+        + (d.replies ? `, ${d.replies} replies` : '')
+        + (d.build ? ` \u00b7 engine ${d.build}` : '');
       $('knowledge').textContent = queuedKnowledge;
       send('STATE').then(onState).then(maybeEngine);
       return;
@@ -237,7 +239,12 @@ async function commit() {
 // ---------- engine driving ---------------------------------------------------
 
 async function maybeEngine() {
-  if (!state || state.over || thinking) return;
+  if (!state || thinking) return;
+  if (state.over) {
+    // switching to a machine mode on a finished game: say why nothing happens
+    if (machineSides().size && $('optoutput').checked) logEngine('(game is over - press New game to let the engines play)');
+    return;
+  }
   if (!machineSides().has(state.toMove)) return;
   thinking = true;
   $('status').textContent = statusLine();

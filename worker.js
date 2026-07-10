@@ -69,7 +69,9 @@ async function boot() {
   const initR = JSON.parse(resp(il));
   bufs.forEach((b) => ex.tx_dealloc(b.p, b.len || 1));
   if (!initR.ok) throw new Error('engine init failed: ' + initR.error);
-  postMessage({ ready: true, threats: initR.threats, book: initR.book, replies: initR.replies || 0 });
+  let build = '';
+  try { build = JSON.parse(call('VERSION')).build || ''; } catch (e) { /* older wasm */ }
+  postMessage({ ready: true, threats: initR.threats, book: initR.book, replies: initR.replies || 0, build });
 }
 
 const queue = [];
