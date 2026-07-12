@@ -154,6 +154,7 @@ function machineSides() {
 function statusLine() {
   if (!state) return '';
   if (state.over) {
+    if (state.result === 'draw') return `Game over: draw (${state.reason}).`;
     const w = state.result === 'white' ? 'White' : 'Black';
     return `Game over: ${w} wins (${state.reason}).`;
   }
@@ -165,6 +166,11 @@ function statusLine() {
 }
 
 function onState(r) {
+  if (r && r.variant) {
+    if ($('variant').value !== r.variant) $('variant').value = r.variant;
+    const tag = r.variant === '8x8-draw' ? ' \u00b7 draw variant' : '';
+    if (queuedKnowledge) $('knowledge').textContent = queuedKnowledge + tag;
+  }
   if (!r.ok) { showErr(r.error); return r; }
   state = r;
   preview = null;
@@ -319,6 +325,15 @@ $('commitbtn').addEventListener('click', commit);
 $('movebox').addEventListener('input', () => { previewTyped(); });
 $('movebox').addEventListener('keydown', (e) => { if (e.key === 'Enter') commit(); });
 $('newbtn').addEventListener('click', newGame);
+$('variant').addEventListener('change', async () => {
+  const v = $('variant').value;
+  if (thinking) { spawnWorker(); } // cancel any think before switching rules
+  const r = await send('VARIANT ' + v);
+  $('enginelog').textContent = '';
+  logEngine(`Variant: ${v === '8x8-draw' ? 'Draw (no legal moves = draw)' : 'Last player loses'} - new game.`);
+  onState(r);
+  maybeEngine();
+});
 $('savebtn').addEventListener('click', saveGame);
 $('loadbtn').addEventListener('click', loadGame);
 $('loadfile').addEventListener('change', loadFile);
