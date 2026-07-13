@@ -29,7 +29,14 @@ function spawnWorker() {
   if (worker) worker.terminate();
   pending.clear();
   thinking = false;
-  worker = new Worker('worker.js');
+  const cb = typeof window !== 'undefined' && window.CACHEBUST; // uicheck runs headless
+  worker = new Worker('worker.js' + (cb ? '?v=' + cb : ''));
+  // Post the page's variant IMMEDIATELY: the worker queues pre-boot messages and
+  // replays them in order, so this is guaranteed to reach the fresh session before
+  // any other command (a fast New Game click, a queued move) can touch it. Kills
+  // the whole class of "respawned session briefly runs default rules" races.
+  const v0 = $('variant') && $('variant').value;
+  if (v0 && v0 !== '8x8') send('VARIANT ' + v0);
   worker.onmessage = (e) => {
     const d = e.data;
     if (d.fatal) { $('status').textContent = 'Engine failed to load: ' + d.fatal; return; }
