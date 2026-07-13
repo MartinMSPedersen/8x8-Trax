@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Trax 8x8</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=2026-07-13-rust51-3ba61b0b">
 </head>
 <body>
 <header>
@@ -39,11 +39,19 @@
     <fieldset>
       <legend>Engine strength</legend>
       <select id="strength">
-        <option value="5000">Easy (5s)</option>
-        <option value="10000" selected>Medium (10s)</option>
-        <option value="30000">Hard (30s)</option>
-        <option value="60000">Expert (60s)</option>
-        <option value="120000">World Champion (120s)</option>
+        <option value="2000">Easy (2 seconds)</option>
+        <option value="5000" selected>Medium (5 seconds)</option>
+        <option value="20000">Hard (20 seconds)</option>
+        <option value="40000">Expert (40 seconds)</option>
+        <option value="90000">World Champion (90 seconds)</option>
+      </select>
+    </fieldset>
+
+    <fieldset>
+      <legend>Variant</legend>
+      <select id="variant">
+        <option value="8x8" selected>Last player loses</option>
+        <option value="8x8-draw">Draw</option>
       </select>
     </fieldset>
 
@@ -89,6 +97,7 @@
   Knowledge: <span id="knowledge">&hellip;</span>
 </footer>
 
-<script src="app.js"></script>
+<script>window.CACHEBUST="2026-07-13-rust51-3ba61b0b";</script>
+<script src="app.js?v=2026-07-13-rust51-3ba61b0b"></script>
 </body>
 </html>

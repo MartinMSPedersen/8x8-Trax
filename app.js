@@ -29,7 +29,14 @@ function spawnWorker() {
   if (worker) worker.terminate();
   pending.clear();
   thinking = false;
-  worker = new Worker('worker.js');
+  const cb = typeof window !== 'undefined' && window.CACHEBUST; // uicheck runs headless
+  worker = new Worker('worker.js' + (cb ? '?v=' + cb : ''));
+  // Post the page's variant IMMEDIATELY: the worker queues pre-boot messages and
+  // replays them in order, so this is guaranteed to reach the fresh session before
+  // any other command (a fast New Game click, a queued move) can touch it. Kills
+  // the whole class of "respawned session briefly runs default rules" races.
+  const v0 = $('variant') && $('variant').value;
+  if (v0 && v0 !== '8x8') send('VARIANT ' + v0);
   worker.onmessage = (e) => {
     const d = e.data;
     if (d.fatal) { $('status').textContent = 'Engine failed to load: ' + d.fatal; return; }
@@ -38,7 +45,10 @@ function spawnWorker() {
         + (d.replies ? `, ${d.replies} replies` : '')
         + (d.build ? ` \u00b7 engine ${d.build}` : '');
       $('knowledge').textContent = queuedKnowledge;
-      send('STATE').then(onState).then(maybeEngine);
+      // A fresh worker session starts at the default variant; re-assert the page's
+      // selection so respawns (New Game during a think, mode changes) keep the rules.
+      const v = $('variant').value;
+      (v !== '8x8' ? send('VARIANT ' + v) : send('STATE')).then(onState).then(maybeEngine);
       return;
     }
     if (d.depth !== undefined) { logEngine(d.depth); return; }
@@ -154,6 +164,7 @@ function machineSides() {
 function statusLine() {
   if (!state) return '';
   if (state.over) {
+    if (state.result === 'draw') return `Game over: draw (${state.reason}).`;
     const w = state.result === 'white' ? 'White' : 'Black';
     return `Game over: ${w} wins (${state.reason}).`;
   }
@@ -165,6 +176,11 @@ function statusLine() {
 }
 
 function onState(r) {
+  if (r && r.variant) {
+    if ($('variant').value !== r.variant) $('variant').value = r.variant;
+    const tag = r.variant === '8x8-draw' ? ' \u00b7 draw variant' : '';
+    if (queuedKnowledge) $('knowledge').textContent = queuedKnowledge + tag;
+  }
   if (!r.ok) { showErr(r.error); return r; }
   state = r;
   preview = null;
@@ -319,6 +335,15 @@ $('commitbtn').addEventListener('click', commit);
 $('movebox').addEventListener('input', () => { previewTyped(); });
 $('movebox').addEventListener('keydown', (e) => { if (e.key === 'Enter') commit(); });
 $('newbtn').addEventListener('click', newGame);
+$('variant').addEventListener('change', async () => {
+  const v = $('variant').value;
+  if (thinking) { spawnWorker(); } // cancel any think before switching rules
+  const r = await send('VARIANT ' + v);
+  $('enginelog').textContent = '';
+  logEngine(`Variant: ${v === '8x8-draw' ? 'Draw (no legal moves = draw)' : 'Last player loses'} - new game.`);
+  onState(r);
+  maybeEngine();
+});
 $('savebtn').addEventListener('click', saveGame);
 $('loadbtn').addEventListener('click', loadGame);
 $('loadfile').addEventListener('change', loadFile);
