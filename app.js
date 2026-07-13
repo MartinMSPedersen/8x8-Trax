@@ -38,7 +38,10 @@ function spawnWorker() {
         + (d.replies ? `, ${d.replies} replies` : '')
         + (d.build ? ` \u00b7 engine ${d.build}` : '');
       $('knowledge').textContent = queuedKnowledge;
-      send('STATE').then(onState).then(maybeEngine);
+      // A fresh worker session starts at the default variant; re-assert the page's
+      // selection so respawns (New Game during a think, mode changes) keep the rules.
+      const v = $('variant').value;
+      (v !== '8x8' ? send('VARIANT ' + v) : send('STATE')).then(onState).then(maybeEngine);
       return;
     }
     if (d.depth !== undefined) { logEngine(d.depth); return; }
