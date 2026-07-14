@@ -41,10 +41,12 @@ function spawnWorker() {
     const d = e.data;
     if (d.fatal) { $('status').textContent = 'Engine failed to load: ' + d.fatal; return; }
     if (d.ready) {
-      queuedKnowledge = `${d.threats} threat pattern(s), ${d.book} book position(s)`
-        + (d.replies ? `, ${d.replies} replies` : '')
-        + (d.build ? ` \u00b7 engine ${d.build}` : '');
+      engineBuild = d.build || engineBuild;
+      queuedKnowledge = knowledgeLine(d);
       $('knowledge').textContent = queuedKnowledge;
+      // The ready counts describe the boot (8x8) session; if the page is on a
+      // different variant, ask the post-switch session for ITS counts.
+      if ($('variant').value !== '8x8') refreshKnowledge();
       // A fresh worker session starts at the default variant; re-assert the page's
       // selection so respawns (New Game during a think, mode changes) keep the rules.
       const v = $('variant').value;
@@ -199,6 +201,26 @@ function onState(r) {
 
 function showErr(msg) { $('moveerr').textContent = msg || ''; }
 
+let engineBuild = '';
+function knowledgeLine(d) {
+  return `${d.threats} threat pattern(s), ${d.book} book position(s)`
+    + (d.replies ? `, ${d.replies} replies` : '')
+    + (engineBuild ? ` \u00b7 engine ${engineBuild}` : '');
+}
+// Refresh the footer from the ACTIVE session - counts are per variant (each
+// ruleset loads its own reply file), so a cached boot-time line goes stale
+// the moment the variant changes.
+async function refreshKnowledge() {
+  try {
+    const d = JSON.parse(await send('KNOWLEDGE'));
+    if (d && d.ok) {
+      queuedKnowledge = knowledgeLine(d);
+      const tag = $('variant').value === '8x8-draw' ? ' \u00b7 draw variant' : '';
+      $('knowledge').textContent = queuedKnowledge + tag;
+    }
+  } catch { /* footer keeps its last line */ }
+}
+
 function logEngine(line) {
   const pre = $('enginelog');
   pre.textContent += line + '\n';
@@ -339,6 +361,7 @@ $('variant').addEventListener('change', async () => {
   const v = $('variant').value;
   if (thinking) { spawnWorker(); } // cancel any think before switching rules
   const r = await send('VARIANT ' + v);
+  refreshKnowledge();
   $('enginelog').textContent = '';
   logEngine(`Variant: ${v === '8x8-draw' ? 'Draw (no legal moves = draw)' : 'Last player loses'} - new game.`);
   onState(r);
