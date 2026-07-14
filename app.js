@@ -66,11 +66,11 @@ function spawnWorker() {
 
 // ---------- rendering -------------------------------------------------------
 
-function tileUrl(kind, _size, winner) {
-  // SVG tiles ship inside the tree (web/tiles) - size-independent, so every
-  // build (site, Electron, zip) is self-contained; no external assets to forget.
-  const base = 'tiles/red/svg/';
-  return winner ? `${base}win/${winner}/${kind}.svg` : `${base}${kind}.svg`;
+function tileUrl(kind, size, winner) {
+  // The GIF tile set (the original board look) ships inside the tree at
+  // web/tiles - every build stays self-contained, no external assets to forget.
+  const base = `tiles/red/${size}/`;
+  return winner ? `${base}win/${winner}/${kind}.gif` : `${base}${kind}.gif`;
 }
 
 function render() {
