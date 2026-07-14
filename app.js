@@ -8,6 +8,36 @@
 const $ = (id) => document.getElementById(id);
 const SIZES = { small: 40, medium: 60, large: 80 };
 
+// Warm the tile cache: embedded-webview asset servers can drop some of the
+// dozens of simultaneous <img> requests a board render fires, leaving broken
+// tiles. Preloading the current size's 18 tiles once (sequentially, at idle)
+// makes every later render a memory-cache hit - immune to render churn.
+const KINDS = ['es', 'nw', 'ns', 'ew', 'sw', 'en'];
+function warmTiles(size) {
+  if (typeof Image === 'undefined') return;
+  const urls = [];
+  for (const k of KINDS) {
+    urls.push(tileUrl(k, size, null), tileUrl(k, size, 'white'), tileUrl(k, size, 'black'));
+  }
+  let i = 0;
+  (function next() {
+    if (i >= urls.length) return;
+    const im = new Image();
+    im.onload = im.onerror = () => setTimeout(next, 10);
+    im.src = urls[i++];
+  })();
+}
+
+// A tile that lost its load race retries once instead of staying broken.
+function tileImg(img) {
+  img.onerror = () => {
+    img.onerror = null;
+    const src = img.src;
+    setTimeout(() => { img.src = src.split('#')[0] + '#r'; }, 150);
+  };
+  return img;
+}
+
 let worker = null;
 let nextId = 1;
 const pending = new Map();
@@ -79,6 +109,7 @@ function render() {
   if (!state) return;
   const size = $('tilesize').value;
   const px = SIZES[size];
+  if (size !== warmTiles.done) { warmTiles.done = size; warmTiles(size); }
   const showForced = $('optforced').checked;
 
   // Grid = bounding box plus one placement ring - but only on axes that can still
@@ -116,7 +147,7 @@ function render() {
       if (prev && !placedKind) {
         // preview tile: the chosen one plain-preview, cascade tiles glowing
         const img = document.createElement('img');
-        img.src = tileUrl(prev.t, size, null);
+        tileImg(img).src = tileUrl(prev.t, size, null);
         img.className = prev.forced && showForced ? 'tile forced' : 'tile preview';
         img.draggable = false;
         cell.appendChild(img);
@@ -130,7 +161,7 @@ function render() {
       } else if (placedKind) {
         const img = document.createElement('img');
         const asWin = winner && winCells.has(key) ? winner : null;
-        img.src = tileUrl(placedKind, size, asWin);
+        tileImg(img).src = tileUrl(placedKind, size, asWin);
         img.className = 'tile';
         img.draggable = false;
         // a committed tile being re-covered by a forced cascade in the preview
