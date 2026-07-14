@@ -333,6 +333,19 @@ async function saveGame() {
   if (typeof r === 'object') { showErr(r && r.error || 'save failed'); return; }
   const raw = String(r);
   const text = raw.startsWith('SAVE|') ? raw.slice(5).replace(/~/g, '\n') : raw;
+  // Desktop (Neutralino): embedded webviews have no download manager, so the
+  // blob-anchor trick is silently swallowed - use the native save dialog.
+  // The site path below is untouched; Neutralino is undefined there.
+  if (typeof Neutralino !== 'undefined') {
+    try {
+      const path = await Neutralino.os.showSaveDialog('Save game', {
+        defaultPath: 'trax-game.trx',
+        filters: [{ name: 'Trax games', extensions: ['trx'] }, { name: 'All files', extensions: ['*'] }],
+      });
+      if (path) await Neutralino.filesystem.writeFile(path, text);
+    } catch (e) { showErr('save failed: ' + (e.message || e)); }
+    return;
+  }
   const blob = new Blob([text], { type: 'text/plain' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
