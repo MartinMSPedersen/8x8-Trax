@@ -312,6 +312,7 @@ function applyTheme(t) {
   themeBtn.textContent = t === 'dark' ? '\u2600\ufe0f' : '\ud83c\udf19'; // sun / moon
 }
 let theme = localStorage.getItem('trax-theme')
+  || (typeof window !== 'undefined' && window.TRAX_DEFAULT_THEME) // desktop builds inject this
   || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 applyTheme(theme);
 themeBtn.addEventListener('click', () => {
@@ -387,6 +388,7 @@ function applyTheme(t) {
   themeBtn.textContent = t === 'dark' ? '\u2600\ufe0f' : '\ud83c\udf19'; // sun / moon
 }
 let theme = localStorage.getItem('trax-theme')
+  || (typeof window !== 'undefined' && window.TRAX_DEFAULT_THEME) // desktop builds inject this
   || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 applyTheme(theme);
 themeBtn.addEventListener('click', () => {
