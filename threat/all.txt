@@ -1,4 +1,6 @@
 # White 3 stage-threats
+Wa+B-WaWb+BWb 3 1 1 0 1 2,0/
+Wa+B-WaW+W 3 1 1 0 1 2,0/
 W+WB{1,2}-W+W 3 1 1 0 0 1,0/
 Wa+BWaB{1,2}-W+W 3 1 1 0 0 1,0+
 W+WB-Wa+BWa 3 1 1 0 0 1,0/
