@@ -21,7 +21,10 @@ main { display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: flex-start; }
 /* Pending (uncommitted) tiles - the chosen move and its forced cascade - render
    darker than committed tiles; everything returns to normal on Commit. (Brightening
    was invisible: the tile gifs are mostly white, and white clips at white.) */
-.tile.preview, .tile.forced { filter: brightness(.68); }
+.tile.preview { filter: brightness(.68); }
+/* Forced-cascade previews glow, as the render comment always promised - the
+   consequence is visually distinct from the tile you chose. */
+.tile.forced { filter: brightness(.82) drop-shadow(0 0 4px var(--accent)); }
 .tile.overlay { position: absolute; inset: 0; }
 #status { font-weight: 600; min-height: 1.4em; margin: .3rem 0; }
 #entry { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
@@ -39,3 +42,5 @@ button { padding: .4rem .8rem; cursor: pointer; }
 #enginelog { max-height: 16rem; overflow: auto; margin: 0; white-space: pre-wrap; }
 footer { margin-top: 1.4rem; font-size: .8rem; }
 select { padding: .3rem; }
+
+.pstat { opacity: .65; font-size: .85em; font-variant-numeric: tabular-nums; }

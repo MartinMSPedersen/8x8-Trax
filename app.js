@@ -144,7 +144,12 @@ function render() {
       cell.style.height = px + 'px';
       const placedKind = tiles.get(key);
       const prev = prevByCell.get(key);
-      if (prev && !placedKind) {
+      // "Show forced moves" OFF hides the cascade consequences entirely: the
+      // cell renders empty (not even a playable marker - the square is spoken
+      // for) until Commit reveals them. Previously the checkbox only swapped
+      // class names the stylesheet rendered identically - a placebo.
+      const hideForced = prev && prev.forced && !showForced;
+      if (prev && !placedKind && !hideForced) {
         // preview tile: the chosen one plain-preview, cascade tiles glowing
         const img = document.createElement('img');
         tileImg(img).src = tileUrl(prev.t, size, null);
@@ -175,7 +180,7 @@ function render() {
         } else {
           cell.appendChild(img);
         }
-      } else if (legalByCell.has(key) && !state.over && !thinking && humanToMove()) {
+      } else if (!hideForced && legalByCell.has(key) && !state.over && !thinking && humanToMove()) {
         cell.classList.add('playable');
         cell.title = legalByCell.get(key).map((m) => m.n).join('  ');
         cell.addEventListener('click', () => cycleCell(c, r));
@@ -183,8 +188,10 @@ function render() {
       board.appendChild(cell);
     }
   }
+  schedulePonder();
 }
 
+// (schedulePonder is called from onState below)
 function humanToMove() {
   if (!state || state.over) return false;
   const machines = machineSides();
@@ -430,6 +437,48 @@ $('loadbtn').addEventListener('click', loadGame);
 $('loadfile').addEventListener('change', loadFile);
 $('tilesize').addEventListener('change', render);
 $('optforced').addEventListener('change', render);
+
+// ---- pondering: think on the human's time -----------------------------------
+// While the human considers, the engine runs short PONDER slices that fill the
+// session's persistent transposition table; the eventual reply then starts on
+// a warm table. Slices (not one long search) keep the single-threaded worker
+// responsive - the human's move is never queued behind a deep ponder.
+let ponderTimer = null;
+const ponderBox = $('optponder'); // absent in the headless harness
+function ponderOn() { return !!(ponderBox && ponderBox.checked); }
+let ponderDepth = 0;
+let ponderSliceMs = 150; // adaptive: grows on plateau, resets on progress
+const ponderStat = $('ponderstatus'); // absent in the headless harness
+function setPonderStat(t) { if (ponderStat) ponderStat.textContent = t; }
+function ponderLoop() {
+  ponderTimer = null;
+  // Seat-at-the-table rule (same as the CLI): no engine side, no pondering -
+  // human vs human must not pin a core, and there is no engine turn coming
+  // to spend the warmth on.
+  if (!ponderOn() || thinking || !state || state.over || !humanToMove() || !worker || !machineSides().size) { setPonderStat(''); return; }
+  send('PONDER ' + ponderSliceMs).then((r) => {
+    try {
+      const d = JSON.parse(r);
+      if (d && d.depth > ponderDepth) {
+        ponderDepth = d.depth;
+        ponderSliceMs = 150;
+        setPonderStat(`\u23f3 pondering: depth ${d.depth} \u00b7 ${d.tt.toLocaleString()} positions`);
+        logEngine(`# pondering on your time: depth ${d.depth}, table ${d.tt} positions`);
+      } else {
+        ponderSliceMs = Math.min(ponderSliceMs * 2, 2000);
+      }
+    } catch { /* non-JSON: ignore */ }
+    if (!thinking && humanToMove()) ponderTimer = setTimeout(ponderLoop, 30);
+  }).catch(() => {});
+}
+function schedulePonder() {
+  ponderDepth = 0;
+  ponderSliceMs = 150;
+  setPonderStat('');
+  if (ponderTimer) { clearTimeout(ponderTimer); ponderTimer = null; }
+  if (ponderOn()) ponderTimer = setTimeout(ponderLoop, 250);
+}
+if (ponderBox) ponderBox.addEventListener('change', schedulePonder);
 $('optoutput').addEventListener('change', () => { $('enginepane').hidden = !$('optoutput').checked; });
 for (const el of document.querySelectorAll('input[name=mode]')) {
   el.addEventListener('change', () => { $('status').textContent = statusLine(); render(); maybeEngine(); });
