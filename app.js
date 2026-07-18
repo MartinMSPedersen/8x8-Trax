@@ -252,7 +252,10 @@ function knowledgeLine(d) {
 // the moment the variant changes.
 async function refreshKnowledge() {
   try {
-    const d = JSON.parse(await send('KNOWLEDGE'));
+    // send() already resolves with the parsed response object (the message
+    // handler JSON.parses it); parsing again threw and silently no-opped the
+    // whole refresh - the footer showed boot (8x8) counts under a draw tag.
+    const d = await send('KNOWLEDGE');
     if (d && d.ok) {
       queuedKnowledge = knowledgeLine(d);
       const tag = $('variant').value === '8x8-draw' ? ' \u00b7 draw variant' : '';
