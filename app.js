@@ -353,7 +353,6 @@ function applyTheme(t) {
   themeBtn.textContent = t === 'dark' ? '\u2600\ufe0f' : '\ud83c\udf19'; // sun / moon
 }
 let theme = localStorage.getItem('trax-theme')
-  || (typeof window !== 'undefined' && window.TRAX_DEFAULT_THEME) // desktop builds inject this
   || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 applyTheme(theme);
 themeBtn.addEventListener('click', () => {
@@ -374,30 +373,6 @@ async function saveGame() {
   if (typeof r === 'object') { showErr(r && r.error || 'save failed'); return; }
   const raw = String(r);
   const text = raw.startsWith('SAVE|') ? raw.slice(5).replace(/~/g, '\n') : raw;
-  // Desktop (Neutralino): embedded webviews have no download manager, so the
-  // blob-anchor trick is silently swallowed - use the native save dialog.
-  // The site path below is untouched; Neutralino is undefined there.
-  const desktop = typeof window !== 'undefined' && window.TRAX_DEFAULT_THEME;
-  if (typeof Neutralino !== 'undefined') {
-    try {
-      const path = await Neutralino.os.showSaveDialog('Save game', {
-        defaultPath: 'trax-game.trx',
-        filters: [{ name: 'Trax games', extensions: ['trx'] }, { name: 'All files', extensions: ['*'] }],
-      });
-      if (path) { await Neutralino.filesystem.writeFile(path, text); logEngine('# saved: ' + path); }
-    } catch (e) {
-      showErr('save failed at native API: ' + (e && (e.message || e.code) || JSON.stringify(e))
-        + ' | NL_PORT=' + (typeof NL_PORT !== 'undefined') + ' NL_TOKEN=' + (typeof NL_TOKEN !== 'undefined'));
-    }
-    return;
-  }
-  if (desktop) {
-    // Desktop build but the client never loaded: naming this beats silently
-    // falling to the blob path, which embedded webviews swallow.
-    showErr('desktop save unavailable: neutralino.js client not loaded (NL globals: '
-      + (typeof NL_PORT !== 'undefined') + ')');
-    return;
-  }
   const blob = new Blob([text], { type: 'text/plain' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -495,7 +470,6 @@ function applyTheme(t) {
   themeBtn.textContent = t === 'dark' ? '\u2600\ufe0f' : '\ud83c\udf19'; // sun / moon
 }
 let theme = localStorage.getItem('trax-theme')
-  || (typeof window !== 'undefined' && window.TRAX_DEFAULT_THEME) // desktop builds inject this
   || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 applyTheme(theme);
 themeBtn.addEventListener('click', () => {
