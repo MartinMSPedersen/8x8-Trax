@@ -44,3 +44,7 @@ footer { margin-top: 1.4rem; font-size: .8rem; }
 select { padding: .3rem; }
 
 .pstat { opacity: .65; font-size: .85em; font-variant-numeric: tabular-nums; }
+
+#histnav { display: flex; gap: .5em; justify-content: center; align-items: center; margin: .35em 0 .2em; }
+#histnav button { min-width: 2.2em; }
+#histpos { opacity: .7; font-size: .9em; min-width: 11em; text-align: center; }

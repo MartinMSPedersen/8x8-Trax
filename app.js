@@ -115,20 +115,22 @@ function render() {
   // Grid = bounding box plus one placement ring - but only on axes that can still
   // grow: at 8 tiles wide no move can exist left or right of the board, so showing
   // ring columns there would suggest placements the rules forbid. Same for rows.
-  const bb = state.bbox || { minCol: 0, maxCol: 0, minRow: 0, maxRow: 0 };
-  const colPad = state.bbox && (bb.maxCol - bb.minCol + 1) < 8 ? 1 : 0;
-  const rowPad = state.bbox && (bb.maxRow - bb.minRow + 1) < 8 ? 1 : 0;
+  const vs = viewData || state; // the board being DRAWN (history view or live)
+  const viewing = viewData !== null;
+  const bb = vs.bbox || { minCol: 0, maxCol: 0, minRow: 0, maxRow: 0 };
+  const colPad = vs.bbox && (bb.maxCol - bb.minCol + 1) < 8 ? 1 : 0;
+  const rowPad = vs.bbox && (bb.maxRow - bb.minRow + 1) < 8 ? 1 : 0;
   const c0 = bb.minCol - colPad, c1 = bb.maxCol + colPad;
   const r0 = bb.minRow - rowPad, r1 = bb.maxRow + rowPad;
   const cols = c1 - c0 + 1, rows = r1 - r0 + 1;
   board.style.gridTemplateColumns = `repeat(${cols}, ${px}px)`;
   board.style.gridTemplateRows = `repeat(${rows}, ${px}px)`;
 
-  const tiles = new Map(state.tiles.map((t) => [`${t.c},${t.r}`, t.t]));
-  const winCells = new Set((state.winCells || []).map((w) => `${w.c},${w.r}`));
+  const tiles = new Map(vs.tiles.map((t) => [`${t.c},${t.r}`, t.t]));
+  const winCells = new Set(((viewing ? null : state.winCells) || []).map((w) => `${w.c},${w.r}`));
   const winner = state.result === 'white' ? 'white' : state.result === 'black' ? 'black' : null;
   const legalByCell = new Map();
-  for (const m of state.legal || []) {
+  for (const m of (viewing ? [] : state.legal || [])) {
     const k = `${m.c},${m.r}`;
     if (!legalByCell.has(k)) legalByCell.set(k, []);
     legalByCell.get(k).push(m);
@@ -187,6 +189,16 @@ function render() {
       }
       board.appendChild(cell);
     }
+  }
+  // History-nav widgets (absent in the headless harness).
+  const hb = $('histback'), hf = $('histfwd'), hp = $('histpos');
+  if (hb && hf && hp) {
+    const total = (state.moves || []).length;
+    hb.disabled = total === 0 || viewPly === 0;
+    hf.disabled = viewPly === null;
+    hp.textContent = viewPly === null
+      ? (total ? `move ${total}/${total} (live)` : '')
+      : `after move ${viewPly}/${total}${viewData && viewData.last ? ' \u00b7 last ' + viewData.last : ''} \u2014 view only`;
   }
   schedulePonder();
 }
@@ -273,6 +285,7 @@ function logEngine(line) {
 // ---------- input: click-to-cycle ------------------------------------------
 
 async function cycleCell(c, r) {
+  if (viewPly !== null) { showErr('viewing history - press \u25b6 to return to the live game'); return; }
   if (!humanToMove() || thinking) return;
   const options = (state.legal || []).filter((m) => m.c === c && m.r === r);
   if (!options.length) return;
@@ -310,6 +323,7 @@ async function previewTyped() {
 }
 
 async function commit() {
+  if (viewPly !== null) { showErr('viewing history - press \u25b6 to return to the live game'); return; }
   if (!preview || thinking || !humanToMove()) return;
   const r = await send('PLAY ' + preview.notation);
   if (!r.ok) { showErr(r.error); return; }
@@ -345,6 +359,7 @@ async function maybeEngine() {
 // ---------- buttons ----------------------------------------------------------
 
 async function newGame() {
+  viewPly = null; viewData = null;
   if (thinking) { // ---------- day/night mode ----------------------------------------------------
 // First visit follows the system preference; the toggle overrides and persists.
 const themeBtn = $('themebtn');
@@ -381,7 +396,7 @@ async function saveGame() {
   URL.revokeObjectURL(a.href);
 }
 
-function loadGame() { $('loadfile').click(); }
+function loadGame() { viewPly = null; viewData = null; $('loadfile').click(); }
 
 async function loadFile(ev) {
   const f = ev.target.files[0];
@@ -400,10 +415,18 @@ $('commitbtn').addEventListener('click', commit);
 $('movebox').addEventListener('input', () => { previewTyped(); });
 $('movebox').addEventListener('keydown', (e) => { if (e.key === 'Enter') commit(); });
 $('newbtn').addEventListener('click', newGame);
+if ($('histback')) $('histback').addEventListener('click', () => {
+  const total = state ? (state.moves || []).length : 0;
+  setView((viewPly === null ? total : viewPly) - 1);
+});
+if ($('histfwd')) $('histfwd').addEventListener('click', () => {
+  if (viewPly !== null) setView(viewPly + 1);
+});
 $('variant').addEventListener('change', async () => {
   const v = $('variant').value;
   if (thinking) { spawnWorker(); } // cancel any think before switching rules
   const r = await send('VARIANT ' + v);
+  viewPly = null; viewData = null;
   refreshKnowledge();
   $('enginelog').textContent = '';
   logEngine(`Variant: ${v === '8x8-draw' ? 'Draw (no legal moves = draw)' : 'Last player loses'} - new game.`);
@@ -426,6 +449,23 @@ const ponderBox = $('optponder'); // absent in the headless harness
 function ponderOn() { return !!(ponderBox && ponderBox.checked); }
 let ponderDepth = 0;
 let ponderSliceMs = 150; // adaptive: grows on plateau, resets on progress
+// ---- history browsing: display-only time travel -----------------------------
+// viewPly = null means live; k means "show the board after the first k moves".
+// The position comes from the read-only HIST command (a scratch-game replay in
+// the wasm); the session's game, TT, pondering and clocks are never touched,
+// and input is blocked while viewing so a click on an old board cannot play.
+let viewPly = null;
+let viewData = null;
+async function setView(k) {
+  const total = state ? (state.moves || []).length : 0;
+  if (k === null || k >= total) { viewPly = null; viewData = null; render(); return; }
+  k = Math.max(0, k);
+  try {
+    const d = await send('HIST ' + k);
+    if (d && d.ok) { viewPly = k; viewData = d; }
+  } catch { /* keep current view */ }
+  render();
+}
 const ponderStat = $('ponderstatus'); // absent in the headless harness
 function setPonderStat(t) { if (ponderStat) ponderStat.textContent = t; }
 function ponderLoop() {
