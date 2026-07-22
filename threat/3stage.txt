@@ -2,6 +2,7 @@ W+W-BWWa-B+Wa+B 3 1 0 0 0 2,0+
 W+WB{1,2}-W+W 3 1 1 0 0 1,0/
 Wa+BWaB{1,2}-W+W 3 1 1 0 0 1,0+
 W+WB-Wa+BWa 3 1 1 0 0 1,0/
+W+BWaB-Wb+BWb 3 1 1 0 0 1,0+
 WaB+BWaB-W+W 3 1 1 0 0 2,0+
 WaW-WWa+BWbB-Wb 3 0 1 1 0 4,1+
 WaW-WWa+BW-W 3 0 1 1 0 3,1\

@@ -197,8 +197,8 @@ function render() {
     hb.disabled = total === 0 || viewPly === 0;
     hf.disabled = viewPly === null;
     hp.textContent = viewPly === null
-      ? (total ? `move ${total}/${total} (live)` : '')
-      : `after move ${viewPly}/${total}${viewData && viewData.last ? ' \u00b7 last ' + viewData.last : ''} \u2014 view only`;
+      ? (total ? `${total}/${total}` : '')
+      : `${viewPly}/${total}`;
   }
   schedulePonder();
 }
