@@ -192,13 +192,16 @@ function render() {
   }
   // History-nav widgets (absent in the headless harness).
   const hb = $('histback'), hf = $('histfwd'), hp = $('histpos');
+  const h1 = $('histfirst'), hl = $('histlast');
   if (hb && hf && hp) {
     const total = (state.moves || []).length;
-    hb.disabled = total === 0 || viewPly === 0;
+    hb.disabled = total === 0 || viewPly === 1;
     hf.disabled = viewPly === null;
+    if (h1) h1.disabled = total === 0 || viewPly === 1;
+    if (hl) hl.disabled = viewPly === null;
     hp.textContent = viewPly === null
-      ? (total ? `${total}/${total}` : '')
-      : `${viewPly}/${total}`;
+      ? (total ? ` ${total}/${total} ` : '')
+      : ` ${viewPly}/${total} `;
   }
   schedulePonder();
 }
@@ -229,7 +232,18 @@ function statusLine() {
     : `Move ${state.moveCount + 1} - ${side} to move (${who}).`;
 }
 
+// Per-ply board snapshots, captured from every live STATE the page sees, so
+// history browsing is a pure memory lookup - it works even while the engine
+// (single-threaded wasm) is deep in a search and could not answer HIST.
+// HIST remains the fallback for plies this page never witnessed (after Load).
+let snapshots = {};
 function onState(r) {
+  if (r && r.ok && Array.isArray(r.tiles) && Array.isArray(r.moves)) {
+    snapshots[r.moves.length] = {
+      tiles: r.tiles, bbox: r.bbox,
+      last: r.moves.length ? r.moves[r.moves.length - 1] : null,
+    };
+  }
   if (r && r.variant) {
     if ($('variant').value !== r.variant) $('variant').value = r.variant;
     const tag = r.variant === '8x8-draw' ? ' \u00b7 draw variant' : '';
@@ -359,7 +373,7 @@ async function maybeEngine() {
 // ---------- buttons ----------------------------------------------------------
 
 async function newGame() {
-  viewPly = null; viewData = null;
+  viewPly = null; viewData = null; snapshots = {};
   if (thinking) { // ---------- day/night mode ----------------------------------------------------
 // First visit follows the system preference; the toggle overrides and persists.
 const themeBtn = $('themebtn');
@@ -396,7 +410,7 @@ async function saveGame() {
   URL.revokeObjectURL(a.href);
 }
 
-function loadGame() { viewPly = null; viewData = null; $('loadfile').click(); }
+function loadGame() { viewPly = null; viewData = null; snapshots = {}; $('loadfile').click(); }
 
 async function loadFile(ev) {
   const f = ev.target.files[0];
@@ -422,11 +436,16 @@ if ($('histback')) $('histback').addEventListener('click', () => {
 if ($('histfwd')) $('histfwd').addEventListener('click', () => {
   if (viewPly !== null) setView(viewPly + 1);
 });
+if ($('histfirst')) $('histfirst').addEventListener('click', () => {
+  const total = state ? (state.moves || []).length : 0;
+  if (total > 0) setView(1);
+});
+if ($('histlast')) $('histlast').addEventListener('click', () => setView(null));
 $('variant').addEventListener('change', async () => {
   const v = $('variant').value;
   if (thinking) { spawnWorker(); } // cancel any think before switching rules
   const r = await send('VARIANT ' + v);
-  viewPly = null; viewData = null;
+  viewPly = null; viewData = null; snapshots = {};
   refreshKnowledge();
   $('enginelog').textContent = '';
   logEngine(`Variant: ${v === '8x8-draw' ? 'Draw (no legal moves = draw)' : 'Last player loses'} - new game.`);
@@ -459,10 +478,17 @@ let viewData = null;
 async function setView(k) {
   const total = state ? (state.moves || []).length : 0;
   if (k === null || k >= total) { viewPly = null; viewData = null; render(); return; }
-  k = Math.max(0, k);
+  k = Math.max(1, k); // never the empty board: move 1 is the earliest view
+  const snap = snapshots[k];
+  if (snap) { // instant, engine-independent path
+    viewPly = k;
+    viewData = { ok: true, hist: k, total, last: snap.last, tiles: snap.tiles, bbox: snap.bbox };
+    render();
+    return;
+  }
   try {
-    const d = await send('HIST ' + k);
-    if (d && d.ok) { viewPly = k; viewData = d; }
+    const d = await send('HIST ' + k); // waits if the engine is mid-think
+    if (d && d.ok) { viewPly = k; viewData = d; snapshots[k] = { tiles: d.tiles, bbox: d.bbox, last: d.last }; }
   } catch { /* keep current view */ }
   render();
 }

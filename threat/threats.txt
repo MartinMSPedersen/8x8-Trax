@@ -1,8 +1,18 @@
+W+WBBWa-B+Wa 5 1 0 0 1 4,-2\
+W+WB+Wa-B+Wa 5 1 2 1 0 1,0/
+WB-W+WWB+B-W+W 5 0 2 1 0 3,-2\
+WaB+WaBWB+B-W+W 5 1 2 1 0 2,0/
+WB-Wa+B-Wa+B+B-W+W 7 0 2 1 0 1,-1\
+Wa-B+Wa-B+Wb-B+Wb 5 0 2 0 0 4,3/
+WaWbBW+WWbWaB+B-W+W 5 1 2 1 0 4,2+
+W+WBB-WaB+Wa+BB 3 1 1 0 0 1,0/
+W+W-B+WaBBWa 7 2 2 0 0 0,-1/
 W+W-B+Wa-B+Wa-B+W 5 3,2/
 W+WBWB+Wa-B+Wa 5 2 1 0 1 0,-1\
 Wa+BB-WaBW+W 3 1 1 0 0 3,1/
 WB+BW-B+BWaB+Wa 7 2 2 1 0 1,-1+
 WW+B+WW-BWBWa+B-Wa 3 1 0 0 0 0,4\
+WaW+WWaBBWb+BWb 5 1 2 1 0 2,4\
 Wa+BWaBWB+BBWBW+W 7 1 2 2 1 1,0+
 WaB+WaB+B-WbWcW+WW+WWcBWb 5 1 2 0 1 2,0/
 W+W-BW+B+BW-BBW+W 5 1 1 1 0 1,4\ 2,0/
@@ -27,4 +37,3 @@ Wa+B-Wa+BW+W 5 1 2 1 0 2,2\
 Wa+B-Wa+BWbB+Wb 5 1 2 1 0 2,3+
 W+WWa-B+Wa 3 1 1 0 0 1,0/
 W+WwaB{2,3}Wa 5 1 1 0 0 1,0/
-B-WaB{1,2}-W+B+WWa 3 1 0 0 2 0,-1/
