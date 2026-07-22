@@ -256,7 +256,26 @@ function onState(r) {
   $('movebox').value = '';
   $('commitbtn').disabled = true;
   showErr('');
-  $('history').textContent = (state.moves || []).join(' ') || '(no moves yet)';
+  // Moves panel mirrors the history view: while browsing, moves beyond the
+  // viewed ply dim to "the future" and the viewed move is emphasised. Every
+  // move is clickable and jumps the view there (clicking the last returns to
+  // live) - the list doubles as a scrubber. Display only, like the arrows.
+  {
+    const hd = $('history');
+    const mvs = state.moves || [];
+    hd.innerHTML = '';
+    if (!mvs.length) hd.textContent = '(no moves yet)';
+    else {
+      const k = viewPly === null ? mvs.length : viewPly;
+      mvs.forEach((m, i) => {
+        const sp = document.createElement('span');
+        sp.textContent = (i ? ' ' : '') + m;
+        sp.className = 'mv' + (i >= k ? ' future' : '') + (viewPly !== null && i === k - 1 ? ' cur' : '');
+        sp.addEventListener('click', () => setView(i + 1));
+        hd.appendChild(sp);
+      });
+    }
+  }
   if (r.engine && r.engine.lines && $('optoutput').checked) {
     logEngine(`played ${r.engine.move}  (${(r.engine.ms / 1000).toFixed(1)}s, ${r.engine.nodes} nodes, book hits ${r.engine.bookHits})`);
   }
