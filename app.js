@@ -268,8 +268,9 @@ function onState(r) {
     else {
       const k = viewPly === null ? mvs.length : viewPly;
       mvs.forEach((m, i) => {
+        if (i) hd.appendChild(document.createTextNode(' ')); // separator OUTSIDE the span: hover underline covers the move only
         const sp = document.createElement('span');
-        sp.textContent = (i ? ' ' : '') + m;
+        sp.textContent = m;
         sp.className = 'mv' + (i >= k ? ' future' : '') + (viewPly !== null && i === k - 1 ? ' cur' : '');
         sp.addEventListener('click', () => setView(i + 1));
         hd.appendChild(sp);
@@ -488,6 +489,22 @@ if ($('histfirst')) $('histfirst').addEventListener('click', () => {
   if (total > 0) setView(1);
 });
 if ($('histlast')) $('histlast').addEventListener('click', () => setView(null));
+// Keyboard arrows browse history in a finished game (and whenever a view is
+// already open). In a live, un-browsed game they do nothing - and they never
+// fire while typing in an input, where arrows must keep moving the caret.
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  if (e.ctrlKey || e.altKey || e.metaKey) return;
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) return;
+  if (!state) return;
+  if (!state.over && viewPly === null) return;
+  const total = (state.moves || []).length;
+  if (!total) return;
+  e.preventDefault();
+  if (e.key === 'ArrowLeft') setView((viewPly === null ? total : viewPly) - 1);
+  else if (viewPly !== null) setView(viewPly + 1);
+});
 $('variant').addEventListener('change', async () => {
   const v = $('variant').value;
   if (thinking) { spawnWorker(); } // cancel any think before switching rules
