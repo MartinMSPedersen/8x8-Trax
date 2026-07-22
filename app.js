@@ -346,6 +346,15 @@ async function cycleCell(c, r) {
 async function previewTyped() {
   const tok = $('movebox').value.trim();
   if (!tok) { preview = null; previewCell = null; $('commitbtn').disabled = true; render(); return; }
+  // A pasted SEQUENCE of moves: no single-move preview to show - stay quiet,
+  // enable Commit, and let commit() play the tokens one by one.
+  if (/\s/.test(tok)) {
+    preview = null; previewCell = null;
+    $('commitbtn').disabled = false;
+    showErr('');
+    render();
+    return;
+  }
   const p = await send('PREVIEW ' + tok);
   if (!p.ok) { preview = null; $('commitbtn').disabled = true; showErr(p.error); render(); return; }
   preview = p;
@@ -357,7 +366,26 @@ async function previewTyped() {
 
 async function commit() {
   if (viewPly !== null) { showErr('viewing history - press \u25b6 to return to the live game'); return; }
-  if (!preview || thinking || !humanToMove()) return;
+  if (thinking || !humanToMove()) return;
+  // Multi-move entry: a whitespace-separated list in the move box (a pasted
+  // game, a line to replay) plays token by token. On a bad token it stops
+  // with the token's number and name; the good prefix stays on the board.
+  const toks = $('movebox').value.trim().split(/\s+/).filter(Boolean);
+  if (toks.length > 1) {
+    for (let i = 0; i < toks.length; i++) {
+      if (state && state.over) { showErr(`game over after move ${i} - '${toks[i]}' and the rest not played`); break; }
+      const r = await send('PLAY ' + toks[i]);
+      if (!r.ok) { showErr(`move ${i + 1} ('${toks[i]}'): ${r.error}`); break; }
+      onState(r);
+    }
+    $('movebox').value = '';
+    preview = null; previewCell = null;
+    $('commitbtn').disabled = true;
+    render();
+    maybeEngine();
+    return;
+  }
+  if (!preview) return;
   const r = await send('PLAY ' + preview.notation);
   if (!r.ok) { showErr(r.error); return; }
   onState(r);
