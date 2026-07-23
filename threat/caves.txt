@@ -8,4 +8,3 @@ WaBWb+B+B-WbWaW 5 2,3\
 W+W-BWBB-W+B 3 1 0 0 0 2,0+ 4,0\
 W+WWaWb-B+B+WbBBa 5 1 1 0 1 0,-1\
 WaBWbW+WW+WWbWa-B+W 5 1 1 1 0 3,2\
-WaBWbW+WW+WWbWa-B+B 5 1 1 1 0 3,2\

@@ -190,15 +190,41 @@ function render() {
       board.appendChild(cell);
     }
   }
+  // Moves panel mirrors the history view: while browsing, moves beyond the
+  // viewed ply dim to "the future" and the viewed move is emphasised. Every
+  // move is clickable and jumps the view there (clicking the last returns to
+  // live) - the list doubles as a scrubber. Display only, like the arrows.
+  // Lives in render(), NOT onState: browsing repaints through render while the
+  // engine thinks, and the greys must follow the view, not the engine's clock.
+  {
+    const hd = $('history');
+    const mvs = state.moves || [];
+    hd.innerHTML = '';
+    if (!mvs.length) hd.textContent = '(no moves yet)';
+    else {
+      const k = viewPly === null ? mvs.length : viewPly;
+      mvs.forEach((m, i) => {
+        if (i) hd.appendChild(document.createTextNode(' ')); // separator OUTSIDE the span: hover underline covers the move only
+        const sp = document.createElement('span');
+        sp.textContent = m;
+        sp.className = 'mv' + (i >= k ? ' future' : '') + (viewPly !== null && i === k - 1 ? ' cur' : '');
+        sp.addEventListener('click', () => setView(i + 1));
+        hd.appendChild(sp);
+      });
+    }
+  }
   // History-nav widgets (absent in the headless harness).
   const hb = $('histback'), hf = $('histfwd'), hp = $('histpos');
+  const h1 = $('histfirst'), hl = $('histlast');
   if (hb && hf && hp) {
     const total = (state.moves || []).length;
-    hb.disabled = total === 0 || viewPly === 0;
+    hb.disabled = total === 0 || viewPly === 1;
     hf.disabled = viewPly === null;
+    if (h1) h1.disabled = total === 0 || viewPly === 1;
+    if (hl) hl.disabled = viewPly === null;
     hp.textContent = viewPly === null
-      ? (total ? `move ${total}/${total} (live)` : '')
-      : `after move ${viewPly}/${total}${viewData && viewData.last ? ' \u00b7 last ' + viewData.last : ''} \u2014 view only`;
+      ? (total ? ` ${total}/${total} ` : '')
+      : ` ${viewPly}/${total} `;
   }
   schedulePonder();
 }
@@ -229,7 +255,18 @@ function statusLine() {
     : `Move ${state.moveCount + 1} - ${side} to move (${who}).`;
 }
 
+// Per-ply board snapshots, captured from every live STATE the page sees, so
+// history browsing is a pure memory lookup - it works even while the engine
+// (single-threaded wasm) is deep in a search and could not answer HIST.
+// HIST remains the fallback for plies this page never witnessed (after Load).
+let snapshots = {};
 function onState(r) {
+  if (r && r.ok && Array.isArray(r.tiles) && Array.isArray(r.moves)) {
+    snapshots[r.moves.length] = {
+      tiles: r.tiles, bbox: r.bbox,
+      last: r.moves.length ? r.moves[r.moves.length - 1] : null,
+    };
+  }
   if (r && r.variant) {
     if ($('variant').value !== r.variant) $('variant').value = r.variant;
     const tag = r.variant === '8x8-draw' ? ' \u00b7 draw variant' : '';
@@ -242,7 +279,6 @@ function onState(r) {
   $('movebox').value = '';
   $('commitbtn').disabled = true;
   showErr('');
-  $('history').textContent = (state.moves || []).join(' ') || '(no moves yet)';
   if (r.engine && r.engine.lines && $('optoutput').checked) {
     logEngine(`played ${r.engine.move}  (${(r.engine.ms / 1000).toFixed(1)}s, ${r.engine.nodes} nodes, book hits ${r.engine.bookHits})`);
   }
@@ -313,6 +349,15 @@ async function cycleCell(c, r) {
 async function previewTyped() {
   const tok = $('movebox').value.trim();
   if (!tok) { preview = null; previewCell = null; $('commitbtn').disabled = true; render(); return; }
+  // A pasted SEQUENCE of moves: no single-move preview to show - stay quiet,
+  // enable Commit, and let commit() play the tokens one by one.
+  if (/\s/.test(tok)) {
+    preview = null; previewCell = null;
+    $('commitbtn').disabled = false;
+    showErr('');
+    render();
+    return;
+  }
   const p = await send('PREVIEW ' + tok);
   if (!p.ok) { preview = null; $('commitbtn').disabled = true; showErr(p.error); render(); return; }
   preview = p;
@@ -324,7 +369,26 @@ async function previewTyped() {
 
 async function commit() {
   if (viewPly !== null) { showErr('viewing history - press \u25b6 to return to the live game'); return; }
-  if (!preview || thinking || !humanToMove()) return;
+  if (thinking || !humanToMove()) return;
+  // Multi-move entry: a whitespace-separated list in the move box (a pasted
+  // game, a line to replay) plays token by token. On a bad token it stops
+  // with the token's number and name; the good prefix stays on the board.
+  const toks = $('movebox').value.trim().split(/\s+/).filter(Boolean);
+  if (toks.length > 1) {
+    for (let i = 0; i < toks.length; i++) {
+      if (state && state.over) { showErr(`game over after move ${i} - '${toks[i]}' and the rest not played`); break; }
+      const r = await send('PLAY ' + toks[i]);
+      if (!r.ok) { showErr(`move ${i + 1} ('${toks[i]}'): ${r.error}`); break; }
+      onState(r);
+    }
+    $('movebox').value = '';
+    preview = null; previewCell = null;
+    $('commitbtn').disabled = true;
+    render();
+    maybeEngine();
+    return;
+  }
+  if (!preview) return;
   const r = await send('PLAY ' + preview.notation);
   if (!r.ok) { showErr(r.error); return; }
   onState(r);
@@ -359,7 +423,7 @@ async function maybeEngine() {
 // ---------- buttons ----------------------------------------------------------
 
 async function newGame() {
-  viewPly = null; viewData = null;
+  viewPly = null; viewData = null; snapshots = {};
   if (thinking) { // ---------- day/night mode ----------------------------------------------------
 // First visit follows the system preference; the toggle overrides and persists.
 const themeBtn = $('themebtn');
@@ -396,7 +460,7 @@ async function saveGame() {
   URL.revokeObjectURL(a.href);
 }
 
-function loadGame() { viewPly = null; viewData = null; $('loadfile').click(); }
+function loadGame() { viewPly = null; viewData = null; snapshots = {}; $('loadfile').click(); }
 
 async function loadFile(ev) {
   const f = ev.target.files[0];
@@ -422,11 +486,32 @@ if ($('histback')) $('histback').addEventListener('click', () => {
 if ($('histfwd')) $('histfwd').addEventListener('click', () => {
   if (viewPly !== null) setView(viewPly + 1);
 });
+if ($('histfirst')) $('histfirst').addEventListener('click', () => {
+  const total = state ? (state.moves || []).length : 0;
+  if (total > 0) setView(1);
+});
+if ($('histlast')) $('histlast').addEventListener('click', () => setView(null));
+// Keyboard arrows browse history whenever the game has moves - including from
+// the live position of a running game (Left steps into the past; Right walks
+// back to live). They never fire while typing in an input, where arrows must
+// keep moving the caret. Display-only, like everything else here.
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  if (e.ctrlKey || e.altKey || e.metaKey) return;
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) return;
+  if (!state) return;
+  const total = (state.moves || []).length;
+  if (!total) return;
+  e.preventDefault();
+  if (e.key === 'ArrowLeft') setView((viewPly === null ? total : viewPly) - 1);
+  else if (viewPly !== null) setView(viewPly + 1);
+});
 $('variant').addEventListener('change', async () => {
   const v = $('variant').value;
   if (thinking) { spawnWorker(); } // cancel any think before switching rules
   const r = await send('VARIANT ' + v);
-  viewPly = null; viewData = null;
+  viewPly = null; viewData = null; snapshots = {};
   refreshKnowledge();
   $('enginelog').textContent = '';
   logEngine(`Variant: ${v === '8x8-draw' ? 'Draw (no legal moves = draw)' : 'Last player loses'} - new game.`);
@@ -459,10 +544,17 @@ let viewData = null;
 async function setView(k) {
   const total = state ? (state.moves || []).length : 0;
   if (k === null || k >= total) { viewPly = null; viewData = null; render(); return; }
-  k = Math.max(0, k);
+  k = Math.max(1, k); // never the empty board: move 1 is the earliest view
+  const snap = snapshots[k];
+  if (snap) { // instant, engine-independent path
+    viewPly = k;
+    viewData = { ok: true, hist: k, total, last: snap.last, tiles: snap.tiles, bbox: snap.bbox };
+    render();
+    return;
+  }
   try {
-    const d = await send('HIST ' + k);
-    if (d && d.ok) { viewPly = k; viewData = d; }
+    const d = await send('HIST ' + k); // waits if the engine is mid-think
+    if (d && d.ok) { viewPly = k; viewData = d; snapshots[k] = { tiles: d.tiles, bbox: d.bbox, last: d.last }; }
   } catch { /* keep current view */ }
   render();
 }
