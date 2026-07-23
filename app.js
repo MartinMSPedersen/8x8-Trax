@@ -118,8 +118,9 @@ function render() {
   const vs = viewData || state; // the board being DRAWN (history view or live)
   const viewing = viewData !== null;
   const bb = vs.bbox || { minCol: 0, maxCol: 0, minRow: 0, maxRow: 0 };
-  const colPad = vs.bbox && (bb.maxCol - bb.minCol + 1) < 8 ? 1 : 0;
-  const rowPad = vs.bbox && (bb.maxRow - bb.minRow + 1) < 8 ? 1 : 0;
+  const cap = state.variant && state.variant.startsWith('12x12') ? 12 : 8;
+  const colPad = vs.bbox && (bb.maxCol - bb.minCol + 1) < cap ? 1 : 0;
+  const rowPad = vs.bbox && (bb.maxRow - bb.minRow + 1) < cap ? 1 : 0;
   const c0 = bb.minCol - colPad, c1 = bb.maxCol + colPad;
   const r0 = bb.minRow - rowPad, r1 = bb.maxRow + rowPad;
   const cols = c1 - c0 + 1, rows = r1 - r0 + 1;
@@ -269,7 +270,7 @@ function onState(r) {
   }
   if (r && r.variant) {
     if ($('variant').value !== r.variant) $('variant').value = r.variant;
-    const tag = r.variant === '8x8-draw' ? ' \u00b7 draw variant' : '';
+    const tag = r.variant.endsWith('-draw') ? ` \u00b7 ${r.variant} draw` : ` \u00b7 ${r.variant}`;
     if (queuedKnowledge) $('knowledge').textContent = queuedKnowledge + tag;
   }
   if (!r.ok) { showErr(r.error); return r; }
@@ -306,7 +307,8 @@ async function refreshKnowledge() {
     const d = await send('KNOWLEDGE');
     if (d && d.ok) {
       queuedKnowledge = knowledgeLine(d);
-      const tag = $('variant').value === '8x8-draw' ? ' \u00b7 draw variant' : '';
+      const v0 = $('variant').value;
+      const tag = v0.endsWith('-draw') ? ` \u00b7 ${v0} draw` : ` \u00b7 ${v0}`;
       $('knowledge').textContent = queuedKnowledge + tag;
     }
   } catch { /* footer keeps its last line */ }
@@ -514,7 +516,7 @@ $('variant').addEventListener('change', async () => {
   viewPly = null; viewData = null; snapshots = {};
   refreshKnowledge();
   $('enginelog').textContent = '';
-  logEngine(`Variant: ${v === '8x8-draw' ? 'Draw (no legal moves = draw)' : 'Last player loses'} - new game.`);
+  logEngine(`Variant: ${v} (${v.endsWith('-draw') ? 'no legal moves = draw' : 'last player loses'}) - new game.`);
   onState(r);
   maybeEngine();
 });
