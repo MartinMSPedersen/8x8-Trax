@@ -1,3 +1,4 @@
+W+W-B+Wa-B+BWa 5 1 2 0 0 3,2+
 Wa+B-WaBBW+W 5 0 1 2 0 4,2
 WaB-WbW+WB+W+W-BBWb+B+Wa 5 1 1 1 0 3,2\
 W+WBBWa-B+Wa 5 1 0 0 1 4,-2\
