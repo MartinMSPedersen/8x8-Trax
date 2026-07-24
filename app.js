@@ -124,8 +124,15 @@ function render() {
   const c0 = bb.minCol - colPad, c1 = bb.maxCol + colPad;
   const r0 = bb.minRow - rowPad, r1 = bb.maxRow + rowPad;
   const cols = c1 - c0 + 1, rows = r1 - r0 + 1;
-  board.style.gridTemplateColumns = `repeat(${cols}, ${px}px)`;
-  board.style.gridTemplateRows = `repeat(${rows}, ${px}px)`;
+  // Fit-to-column: the chosen tile size is a CEILING, not a promise. The board
+  // measures the space its column actually has and shrinks tiles to fit, so a
+  // 12x12 board at "large" can never overlap the controls - it scales down
+  // instead (floor 24px; below that the CSS overflow scroll takes over).
+  const wrap = document.getElementById('boardwrap');
+  const avail = wrap && wrap.clientWidth ? wrap.clientWidth - 6 : 0; // board padding+border
+  const pxEff = avail > 0 ? Math.max(24, Math.min(px, Math.floor(avail / cols))) : px;
+  board.style.gridTemplateColumns = `repeat(${cols}, ${pxEff}px)`;
+  board.style.gridTemplateRows = `repeat(${rows}, ${pxEff}px)`;
 
   const tiles = new Map(vs.tiles.map((t) => [`${t.c},${t.r}`, t.t]));
   const winCells = new Set(((viewing ? null : state.winCells) || []).map((w) => `${w.c},${w.r}`));
@@ -143,8 +150,8 @@ function render() {
       const key = `${c},${r}`;
       const cell = document.createElement('div');
       cell.className = 'cell';
-      cell.style.width = px + 'px';
-      cell.style.height = px + 'px';
+      cell.style.width = pxEff + 'px';
+      cell.style.height = pxEff + 'px';
       const placedKind = tiles.get(key);
       const prev = prevByCell.get(key);
       // "Show forced moves" OFF hides the cascade consequences entirely: the
@@ -493,6 +500,16 @@ if ($('histfirst')) $('histfirst').addEventListener('click', () => {
   if (total > 0) setView(1);
 });
 if ($('histlast')) $('histlast').addEventListener('click', () => setView(null));
+// The fit-to-column tile sizing depends on the window: re-render on resize
+// (cheap - the board is a few hundred nodes) so tiles grow back when space does.
+if (typeof window !== 'undefined' && window.addEventListener) {
+  let rsz = null;
+  window.addEventListener('resize', () => {
+    if (rsz) clearTimeout(rsz);
+    rsz = setTimeout(() => { rsz = null; render(); }, 120);
+  });
+}
+
 // Keyboard arrows browse history whenever the game has moves - including from
 // the live position of a running game (Left steps into the past; Right walks
 // back to live). They never fire while typing in an input, where arrows must
