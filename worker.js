@@ -49,7 +49,7 @@ async function boot() {
   const manifest = (await fetchText('threat/manifest.txt')).split(/\r?\n/)
     .map((l) => l.trim()).filter((l) => l && !l.startsWith('#') && l !== 'manifest.txt');
   const threatFiles = manifest.length ? manifest : THREAT_FILES;
-  const [wasmBytes, always, never, replies, repliesDraw, evalc, ...threatParts] = await Promise.all([
+  const [wasmBytes, always, never, replies0, repliesDraw, replies12, replies12d, evalc, ...threatParts] = await Promise.all([
     fetch('trax.wasm', { cache: 'no-cache' }).then((r) => {
       if (!r.ok) throw new Error('trax.wasm not found next to index.html');
       return r.arrayBuffer();
@@ -58,6 +58,8 @@ async function boot() {
     fetchText('book/neverplay.trx'),
     fetchText('book/replies.txt'),
     fetchText('book/replies-8x8-draw.txt'),
+    fetchText('book/replies-12x12.txt'),
+    fetchText('book/replies-12x12-draw.txt'),
     fetchText('eval.conf'),
     ...threatFiles.map((f) => fetchText('threat/' + f)),
   ]);
@@ -74,6 +76,11 @@ async function boot() {
   });
   ex = instance.exports;
 
+  // The 12x12 family's replies ride in the main buffer under [variant]
+  // sections - the six-buffer wasm ABI stays put.
+  let replies = replies0;
+  if (replies12.trim()) replies += `\n[12x12]\n${replies12}`;
+  if (replies12d.trim()) replies += `\n[12x12-draw]\n${replies12d}`;
   const bufs = [threats, always, never, replies, repliesDraw, evalc].map(put);
   const il = ex.tx_init(bufs[0].p, bufs[0].len, bufs[1].p, bufs[1].len, bufs[2].p, bufs[2].len, bufs[3].p, bufs[3].len, bufs[4].p, bufs[4].len, bufs[5].p, bufs[5].len);
   const initR = JSON.parse(resp(il));
