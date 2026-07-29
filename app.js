@@ -414,6 +414,9 @@ async function maybeEngine() {
     return;
   }
   if (!machineSides().has(state.toMove)) return;
+  // Structural invariant: no human staging survives an engine think - belt
+  // for any future path that reaches here with a preview still on the board.
+  if (preview || previewCell) { preview = null; previewCell = null; $('commitbtn').disabled = true; }
   thinking = true;
   $('status').textContent = statusLine();
   render();
@@ -610,7 +613,17 @@ function schedulePonder() {
 if (ponderBox) ponderBox.addEventListener('change', schedulePonder);
 $('optoutput').addEventListener('change', () => { $('enginepane').hidden = !$('optoutput').checked; });
 for (const el of document.querySelectorAll('input[name=mode]')) {
-  el.addEventListener('change', () => { $('status').textContent = statusLine(); render(); maybeEngine(); });
+  el.addEventListener('change', () => {
+    // A staged-but-uncommitted human move is orphaned by a mode switch: if
+    // the seat that staged it is no longer human, the marked tile and its
+    // forced-cascade preview would linger on the board as ghosts outside
+    // the move history (field case: stage, switch to Two Machines, watch
+    // the engine play around your phantom tiles). Sweep the staging.
+    if (preview || previewCell) {
+      preview = null; previewCell = null; $('commitbtn').disabled = true;
+    }
+    $('status').textContent = statusLine(); render(); maybeEngine();
+  });
 }
 
 // ---------- day/night mode ----------------------------------------------------
