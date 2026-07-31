@@ -607,6 +607,17 @@ $('optoutput').addEventListener('change', () => {
   localStorage.setItem('trax-output', $('optoutput').checked ? '1' : '0');
   $('enginepane').hidden = !$('optoutput').checked;
 });
+// Clicking anywhere outside the board deselects: the staged move and its
+// forced-cascade preview vanish (standard deselect UX). The commit button is
+// the one outside-the-board element that must NOT clear - it consumes the
+// staging instead.
+document.addEventListener('click', (e) => {
+  if (!preview && !previewCell) return;
+  const t = e.target instanceof Element ? e.target : null;
+  if (t && (t.closest('#board') || t.closest('#commitbtn'))) return;
+  preview = null; previewCell = null; $('commitbtn').disabled = true; render();
+});
+
 for (const el of document.querySelectorAll('input[name=mode]')) {
   el.addEventListener('change', () => {
     // A staged-but-uncommitted human move is orphaned by a mode switch: if
