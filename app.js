@@ -83,7 +83,13 @@ function spawnWorker() {
       (v !== '8x8' ? send('VARIANT ' + v) : send('STATE')).then(onState).then(maybeEngine);
       return;
     }
-    if (d.depth !== undefined) { logEngine(d.depth); return; }
+    if (d.depth !== undefined) {
+      // One gate for the whole pane: the raw depth/noise/book relay used to
+      // be unconditional while headers and 'played' checked the box - an
+      // unchecked box produced framing-free ghost streams (field case).
+      if ($('optoutput').checked) logEngine(d.depth);
+      return;
+    }
     const r = pending.get(d.id);
     if (r) {
       pending.delete(d.id);
@@ -436,23 +442,7 @@ async function maybeEngine() {
 
 async function newGame() {
   viewPly = null; viewData = null; snapshots = {};
-  if (thinking) { // ---------- day/night mode ----------------------------------------------------
-// First visit follows the system preference; the toggle overrides and persists.
-const themeBtn = $('themebtn');
-function applyTheme(t) {
-  document.documentElement.dataset.theme = t;
-  themeBtn.textContent = t === 'dark' ? '\u2600\ufe0f' : '\ud83c\udf19'; // sun / moon
-}
-let theme = localStorage.getItem('trax-theme')
-  || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-applyTheme(theme);
-themeBtn.addEventListener('click', () => {
-  theme = theme === 'dark' ? 'light' : 'dark';
-  localStorage.setItem('trax-theme', theme);
-  applyTheme(theme);
-});
-
-spawnWorker(); $('enginelog').textContent = ''; return; } // cancels the think, re-inits
+  if (thinking) { spawnWorker(); $('enginelog').textContent = ''; return; } // cancels the think, re-inits
   const r = await send('NEW');
   $('enginelog').textContent = '';
   onState(r);
@@ -611,7 +601,12 @@ function schedulePonder() {
   if (ponderOn()) ponderTimer = setTimeout(ponderLoop, 250);
 }
 if (ponderBox) ponderBox.addEventListener('change', schedulePonder);
-$('optoutput').addEventListener('change', () => { $('enginepane').hidden = !$('optoutput').checked; });
+$('optoutput').checked = localStorage.getItem('trax-output') !== '0'; // survives deploys; default on
+$('enginepane').hidden = !$('optoutput').checked;
+$('optoutput').addEventListener('change', () => {
+  localStorage.setItem('trax-output', $('optoutput').checked ? '1' : '0');
+  $('enginepane').hidden = !$('optoutput').checked;
+});
 for (const el of document.querySelectorAll('input[name=mode]')) {
   el.addEventListener('change', () => {
     // A staged-but-uncommitted human move is orphaned by a mode switch: if
