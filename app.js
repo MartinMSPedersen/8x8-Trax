@@ -172,10 +172,15 @@ function render() {
         img.className = prev.forced && showForced ? 'tile forced' : 'tile preview';
         img.draggable = false;
         cell.appendChild(img);
-        // Clicking the previewed (uncommitted) tile cycles to the next candidate
-        // geometry at that cell. Only the anchor tile cycles; forced-cascade
-        // previews are consequences, not choices.
-        if (!prev.forced && humanToMove() && !thinking) {
+        // Clicking the previewed (uncommitted) anchor cycles candidate
+        // geometries at that cell. Clicking a FORCED preview tile re-anchors
+        // the staging there instead - the old selection dissolves and that
+        // cell becomes the new choice point - provided the cell is a legal
+        // direct placement on the real board (second-order cascade cells,
+        // reachable only through other preview tiles, stay inert: you
+        // genuinely cannot stage there). cycleCell handles both roles:
+        // same cell cycles, new cell stages fresh.
+        if (humanToMove() && !thinking && (!prev.forced || legalByCell.has(key))) {
           cell.classList.add('playable');
           cell.addEventListener('click', () => cycleCell(c, r));
         }
