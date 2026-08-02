@@ -279,7 +279,9 @@ function statusLine() {
 // (single-threaded wasm) is deep in a search and could not answer HIST.
 // HIST remains the fallback for plies this page never witnessed (after Load).
 let snapshots = {};
+let autoStagedGame = false;
 function onState(r) {
+  if (r && typeof r.moveCount === 'number' && r.moveCount > 0) autoStagedGame = false; // re-arm for the next fresh board
   if (r && r.ok && Array.isArray(r.tiles) && Array.isArray(r.moves)) {
     snapshots[r.moves.length] = {
       tiles: r.tiles, bbox: r.bbox,
@@ -303,6 +305,7 @@ function onState(r) {
   }
   $('status').textContent = statusLine();
   render();
+  maybeAutoStage(); // fresh empty board + human to move => pre-stage the curve
   return r;
 }
 
@@ -361,6 +364,29 @@ async function cycleCell(c, r) {
   $('movebox').value = p.notation;
   $('commitbtn').disabled = false;
   showErr('');
+  render();
+}
+
+// A fresh, empty board with a human to move pre-stages the curve at the
+// origin - an uncommitted tile that says "this is how moves work" without a
+// word of instructions (sister-tested onboarding). Fires once per game: the
+// flag re-arms when a game progresses, so clicking away to deselect is
+// respected rather than fought.
+async function maybeAutoStage() {
+  if (autoStagedGame || !state) return;
+  if (state.moveCount !== 0 || state.over || viewPly !== null) return;
+  if (!humanToMove() || thinking || preview) return;
+  const options = (state.legal || []).filter((m) => m.c === 0 && m.r === 0);
+  if (!options.length) return;
+  autoStagedGame = true;
+  let idx = options.findIndex((m) => m.g === '/');   // prefer the curve
+  if (idx < 0) idx = 0;
+  previewCell = { c: 0, r: 0, idx };
+  const p = await send(`PREVIEWC 0 0 ${options[idx].g}`);
+  if (!p.ok) { previewCell = null; return; }
+  preview = p;
+  $('movebox').value = p.notation;
+  $('commitbtn').disabled = false;
   render();
 }
 
