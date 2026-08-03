@@ -172,10 +172,15 @@ function render() {
         img.className = prev.forced && showForced ? 'tile forced' : 'tile preview';
         img.draggable = false;
         cell.appendChild(img);
-        // Clicking the previewed (uncommitted) tile cycles to the next candidate
-        // geometry at that cell. Only the anchor tile cycles; forced-cascade
-        // previews are consequences, not choices.
-        if (!prev.forced && humanToMove() && !thinking) {
+        // Clicking the previewed (uncommitted) anchor cycles candidate
+        // geometries at that cell. Clicking a FORCED preview tile re-anchors
+        // the staging there instead - the old selection dissolves and that
+        // cell becomes the new choice point - provided the cell is a legal
+        // direct placement on the real board (second-order cascade cells,
+        // reachable only through other preview tiles, stay inert: you
+        // genuinely cannot stage there). cycleCell handles both roles:
+        // same cell cycles, new cell stages fresh.
+        if (humanToMove() && !thinking && (!prev.forced || legalByCell.has(key))) {
           cell.classList.add('playable');
           cell.addEventListener('click', () => cycleCell(c, r));
         }
@@ -274,7 +279,9 @@ function statusLine() {
 // (single-threaded wasm) is deep in a search and could not answer HIST.
 // HIST remains the fallback for plies this page never witnessed (after Load).
 let snapshots = {};
+let autoStagedGame = false;
 function onState(r) {
+  if (r && typeof r.moveCount === 'number' && r.moveCount > 0) autoStagedGame = false; // re-arm for the next fresh board
   if (r && r.ok && Array.isArray(r.tiles) && Array.isArray(r.moves)) {
     snapshots[r.moves.length] = {
       tiles: r.tiles, bbox: r.bbox,
@@ -298,6 +305,7 @@ function onState(r) {
   }
   $('status').textContent = statusLine();
   render();
+  maybeAutoStage(); // fresh empty board + human to move => pre-stage the curve
   return r;
 }
 
@@ -356,6 +364,29 @@ async function cycleCell(c, r) {
   $('movebox').value = p.notation;
   $('commitbtn').disabled = false;
   showErr('');
+  render();
+}
+
+// A fresh, empty board with a human to move pre-stages the curve at the
+// origin - an uncommitted tile that says "this is how moves work" without a
+// word of instructions (sister-tested onboarding). Fires once per game: the
+// flag re-arms when a game progresses, so clicking away to deselect is
+// respected rather than fought.
+async function maybeAutoStage() {
+  if (autoStagedGame || !state) return;
+  if (state.moveCount !== 0 || state.over || viewPly !== null) return;
+  if (!humanToMove() || thinking || preview) return;
+  const options = (state.legal || []).filter((m) => m.c === 0 && m.r === 0);
+  if (!options.length) return;
+  autoStagedGame = true;
+  let idx = options.findIndex((m) => m.g === '/');   // prefer the curve
+  if (idx < 0) idx = 0;
+  previewCell = { c: 0, r: 0, idx };
+  const p = await send(`PREVIEWC 0 0 ${options[idx].g}`);
+  if (!p.ok) { previewCell = null; return; }
+  preview = p;
+  $('movebox').value = p.notation;
+  $('commitbtn').disabled = false;
   render();
 }
 
@@ -607,6 +638,17 @@ $('optoutput').addEventListener('change', () => {
   localStorage.setItem('trax-output', $('optoutput').checked ? '1' : '0');
   $('enginepane').hidden = !$('optoutput').checked;
 });
+// Clicking anywhere outside the board deselects: the staged move and its
+// forced-cascade preview vanish (standard deselect UX). The commit button is
+// the one outside-the-board element that must NOT clear - it consumes the
+// staging instead.
+document.addEventListener('click', (e) => {
+  if (!preview && !previewCell) return;
+  const t = e.target instanceof Element ? e.target : null;
+  if (t && (t.closest('#board') || t.closest('#commitbtn'))) return;
+  preview = null; previewCell = null; $('commitbtn').disabled = true; render();
+});
+
 for (const el of document.querySelectorAll('input[name=mode]')) {
   el.addEventListener('change', () => {
     // A staged-but-uncommitted human move is orphaned by a mode switch: if
