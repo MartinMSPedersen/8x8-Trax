@@ -42,10 +42,17 @@ function call(line) {
 // 'no-cache' alone only forces revalidation, which a CDN edge can still
 // answer stale within its TTL.
 const V = (typeof location === 'object' && location && location.search) ? location.search : '';
+// Knowledge files (books, threats, replies) change BETWEEN builds - curation
+// is their whole life - so the build-id ?v= alone cannot bust them: an
+// edited neverplay.trx redeployed under the same build keeps a byte-identical
+// URL and rides the CDN-edge lottery. Artifacts stay build-versioned (the
+// wasm is large and build-tied); knowledge gets a per-session timestamp -
+// small text files, always fetched fresh at worker boot.
+const K = (V ? V + '&_=' : '?_=') + Date.now();
 
 async function fetchText(url) {
   try {
-    const r = await fetch(url + V, { cache: 'no-cache' });
+    const r = await fetch(url + K, { cache: 'no-cache' });
     return r.ok ? await r.text() : '';
   } catch (e) { return ''; }
 }
