@@ -36,9 +36,16 @@ function call(line) {
   return resp(rl);
 }
 
+// The worker's own URL carries ?v=<build> (app.js appends it); stamping the
+// same version onto every asset fetch makes each deploy a brand-new URL set,
+// defeating both browser caches and the Pages CDN's max-age=600 edges -
+// 'no-cache' alone only forces revalidation, which a CDN edge can still
+// answer stale within its TTL.
+const V = (typeof location === 'object' && location && location.search) ? location.search : '';
+
 async function fetchText(url) {
   try {
-    const r = await fetch(url, { cache: 'no-cache' });
+    const r = await fetch(url + V, { cache: 'no-cache' });
     return r.ok ? await r.text() : '';
   } catch (e) { return ''; }
 }
@@ -50,7 +57,7 @@ async function boot() {
     .map((l) => l.trim()).filter((l) => l && !l.startsWith('#') && l !== 'manifest.txt');
   const threatFiles = manifest.length ? manifest : THREAT_FILES;
   const [wasmBytes, always, never, replies0, repliesDraw, replies12, replies12d, evalc, ...threatParts] = await Promise.all([
-    fetch('trax.wasm', { cache: 'no-cache' }).then((r) => {
+    fetch('trax.wasm' + V, { cache: 'no-cache' }).then((r) => {
       if (!r.ok) throw new Error('trax.wasm not found next to index.html');
       return r.arrayBuffer();
     }),
