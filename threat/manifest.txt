@@ -1,7 +1,6 @@
 3stage.txt
 L-threats.txt
 README.txt
-all.txt
 caves.txt
 edge.txt
 threats.txt
