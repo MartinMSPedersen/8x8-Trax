@@ -313,7 +313,7 @@ function showErr(msg) { $('moveerr').textContent = msg || ''; }
 
 let engineBuild = '';
 function knowledgeLine(d) {
-  return `${d.threats} threat patterns, ${d.book} book positions`
+  return `${d.threats} threat pattern(s), ${d.book} book position(s)`
     + (d.replies ? `, ${d.replies} replies` : '')
     + (engineBuild ? ` \u00b7 engine ${engineBuild}` : '');
 }
