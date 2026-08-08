@@ -302,6 +302,12 @@ function onState(r) {
   showErr('');
   if (r.engine && r.engine.lines && $('optoutput').checked) {
     logEngine(`played ${r.engine.move}  (${(r.engine.ms / 1000).toFixed(1)}s, ${r.engine.nodes} nodes, book hits ${r.engine.bookHits})`);
+    // Forensic tripwire: a timed think returning ZERO nodes is the anomaly
+    // under investigation - auto-fetch the search's internal counters so the
+    // incident documents itself in the engine pane. Silent on healthy thinks.
+    if (r.engine.nodes === 0 && r.engine.ms > 1000) {
+      send('LASTSTATS').then((t) => logEngine('# forensics (zero-node think): ' + t)).catch(() => {});
+    }
   }
   $('status').textContent = statusLine();
   render();
