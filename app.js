@@ -515,6 +515,16 @@ async function loadFile(ev) {
 // ---------- wiring -----------------------------------------------------------
 
 $('commitbtn').addEventListener('click', commit);
+// Right-click commits: with a preview staged, the second hand never has to
+// travel to the button - left cycles, right confirms. The browser's context
+// menu is suppressed on the board only (it stays available elsewhere), and
+// with no preview staged a right-click is simply ignored. On Android a
+// long-press fires contextmenu, so touch players get press-and-hold-to-commit
+// for free; iOS does not emit the event and keeps the button as the only path.
+$('board').addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  if (!$('commitbtn').disabled) commit();
+});
 $('movebox').addEventListener('input', () => { previewTyped(); });
 $('movebox').addEventListener('keydown', (e) => { if (e.key === 'Enter') commit(); });
 $('newbtn').addEventListener('click', newGame);
