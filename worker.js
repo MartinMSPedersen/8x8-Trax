@@ -70,7 +70,9 @@ async function boot() {
     }),
     fetchText('book/alwaysplay.trx'),
     fetchText('book/neverplay.trx'),
-    fetchText('book/replies.txt'),
+    // Uniform reply names since rust275; the bare replies.txt is the 8x8
+    // legacy fossil, fetched only when the new name is absent (transition aid).
+    fetchText('book/replies-8x8.txt').then((t) => t || fetchText('book/replies.txt')),
     fetchText('book/replies-8x8-draw.txt'),
     fetchText('book/replies-12x12.txt'),
     fetchText('book/replies-12x12-draw.txt'),
