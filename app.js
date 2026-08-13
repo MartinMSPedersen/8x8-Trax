@@ -595,7 +595,16 @@ async function saveGif() {
                               r0 = Math.min(r0, f.bbox.minRow); r1 = Math.max(r1, f.bbox.maxRow); }
     const px = 60, W = (c1 - c0 + 1) * px, H = (r1 - r0 + 1) * px;
     const imgs = new Map();
-    const need = (u) => { if (!imgs.has(u)) imgs.set(u, loadImg(u)); };
+    // Sharpness: an SVG with only a viewBox has a browser-default intrinsic
+    // size, and drawImage then scales that bitmap - blur. Injecting explicit
+    // width/height makes the browser rasterize the vector at exactly px.
+    const loadImgSized = async (url, size) => {
+      const txt = await (await fetch(url)).text();
+      const sized = txt.replace('<svg ', '<svg width="' + size + '" height="' + size + '" ');
+      const bu = URL.createObjectURL(new Blob([sized], { type: 'image/svg+xml' }));
+      try { return await loadImg(bu); } finally { URL.revokeObjectURL(bu); }
+    };
+    const need = (u) => { if (!imgs.has(u)) imgs.set(u, loadImgSized(u, px)); };
     for (const f of frames) for (const t of f.tiles)
       need(tileUrl(t.t, f.win && f.win.cells.has(t.c + ',' + t.r) ? f.win.winner : null));
     for (const [u, p] of imgs) imgs.set(u, await p);
@@ -659,7 +668,7 @@ async function saveGif() {
       const data = ctx.getImageData(0, 0, W, H).data;
       const idx = new Uint8Array(W * H);
       for (let i = 0, j = 0; i < idx.length; i++, j += 4) idx[i] = nearest256(data[j], data[j + 1], data[j + 2]);
-      const delay = fi === frames.length - 1 ? 200 : 50; // 0.5s frames, 2s final hold
+      const delay = fi === frames.length - 1 ? 350 : 50; // 0.5s frames, 3.5s final hold
       b(0x21, 0xF9, 4, 0, delay & 255, delay >> 8, 0, 0);
       b(0x2C, 0, 0, 0, 0, W & 255, W >> 8, H & 255, H >> 8, 0, 8);
       gifSubBlocks(gifLzw(idx, 8), out);
