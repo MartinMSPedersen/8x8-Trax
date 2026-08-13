@@ -593,7 +593,7 @@ async function saveGif() {
     let c0 = Infinity, c1 = -Infinity, r0 = Infinity, r1 = -Infinity;
     for (const f of frames) { c0 = Math.min(c0, f.bbox.minCol); c1 = Math.max(c1, f.bbox.maxCol);
                               r0 = Math.min(r0, f.bbox.minRow); r1 = Math.max(r1, f.bbox.maxRow); }
-    const px = 30, W = (c1 - c0 + 1) * px, H = (r1 - r0 + 1) * px;
+    const px = 60, W = (c1 - c0 + 1) * px, H = (r1 - r0 + 1) * px;
     const imgs = new Map();
     const need = (u) => { if (!imgs.has(u)) imgs.set(u, loadImg(u)); };
     for (const f of frames) for (const t of f.tiles)
@@ -601,26 +601,68 @@ async function saveGif() {
     for (const [u, p] of imgs) imgs.set(u, await p);
     const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
     const ctx = cv.getContext('2d', { willReadFrequently: true });
-    const out = [];
-    const b = (...xs) => out.push(...xs);
-    b(71, 73, 70, 56, 57, 97);                       // GIF89a
-    b(W & 255, W >> 8, H & 255, H >> 8, 0xF3, 0, 0); // GCT: 16 entries
-    for (let i = 0; i < 16; i++) { const p = GIF_PAL[i] ?? GIF_PAL[0]; b(p >> 16, (p >> 8) & 255, p & 255); }
-    b(0x21, 0xFF, 11, 78, 69, 84, 83, 67, 65, 80, 69, 50, 46, 48, 3, 1, 0, 0, 0); // loop forever
-    for (let fi = 0; fi < frames.length; fi++) {
-      const f = frames[fi];
+    const renderFrame = (f) => {
       ctx.fillStyle = '#202020'; ctx.fillRect(0, 0, W, H);
       for (const t of f.tiles) {
         const w = f.win && f.win.cells.has(t.c + ',' + t.r) ? f.win.winner : null;
         ctx.drawImage(imgs.get(tileUrl(t.t, w)), (t.c - c0) * px, (t.r - r0) * px, px, px);
       }
+    };
+    // Two passes for a global adaptive palette. Pass 1 renders every frame
+    // only to accumulate a 5-bit-bucket colour histogram (no pixel retention,
+    // so memory stays flat on phones); the palette is the 8 measured core
+    // colours exact plus the most populous bucket means - anti-aliased edge
+    // blends get real entries instead of nearest-core speckle. Pass 2
+    // re-renders (drawImage is cheap next to LZW) and indexes.
+    const bucketOf = (r, g, b2) => ((r >> 3) << 10) | ((g >> 3) << 5) | (b2 >> 3);
+    const hist = new Map();
+    for (const f of frames) {
+      renderFrame(f);
+      const d = ctx.getImageData(0, 0, W, H).data;
+      for (let j = 0; j < d.length; j += 4) {
+        const bk = bucketOf(d[j], d[j + 1], d[j + 2]);
+        let e = hist.get(bk); if (!e) hist.set(bk, e = { n: 0, r: 0, g: 0, b: 0 });
+        e.n++; e.r += d[j]; e.g += d[j + 1]; e.b += d[j + 2];
+      }
+      await new Promise(r => setTimeout(r));
+    }
+    const pal = GIF_PAL.slice();
+    const bucketIdx = new Map();
+    for (let i = 0; i < pal.length; i++) bucketIdx.set(bucketOf(pal[i] >> 16, (pal[i] >> 8) & 255, pal[i] & 255), i);
+    const ranked = [...hist.entries()].filter(([bk]) => !bucketIdx.has(bk)).sort((a, b2) => b2[1].n - a[1].n);
+    for (const [bk, e] of ranked) {
+      if (pal.length >= 256) break;
+      bucketIdx.set(bk, pal.length);
+      pal.push((Math.round(e.r / e.n) << 16) | (Math.round(e.g / e.n) << 8) | Math.round(e.b / e.n));
+    }
+    while (pal.length < 256) pal.push(0);
+    const memo = new Map();
+    const nearest256 = (r, g, b2) => {
+      const bk = bucketOf(r, g, b2);
+      let v = bucketIdx.get(bk); if (v !== undefined) return v;
+      v = memo.get(bk); if (v !== undefined) return v;
+      let bi = 0, bd = Infinity;
+      for (let i = 0; i < 256; i++) {
+        const p = pal[i], dr = r - (p >> 16), dg = g - ((p >> 8) & 255), db = b2 - (p & 255);
+        const dd = dr * dr + dg * dg + db * db; if (dd < bd) { bd = dd; bi = i; }
+      }
+      memo.set(bk, bi); return bi;
+    };
+    const out = [];
+    const b = (...xs) => out.push(...xs);
+    b(71, 73, 70, 56, 57, 97);                       // GIF89a
+    b(W & 255, W >> 8, H & 255, H >> 8, 0xF7, 0, 0); // GCT: 256 entries
+    for (let i = 0; i < 256; i++) { const p = pal[i]; b(p >> 16, (p >> 8) & 255, p & 255); }
+    b(0x21, 0xFF, 11, 78, 69, 84, 83, 67, 65, 80, 69, 50, 46, 48, 3, 1, 0, 0, 0); // loop forever
+    for (let fi = 0; fi < frames.length; fi++) {
+      renderFrame(frames[fi]);
       const data = ctx.getImageData(0, 0, W, H).data;
       const idx = new Uint8Array(W * H);
-      for (let i = 0, j = 0; i < idx.length; i++, j += 4) idx[i] = gifNearest(data[j], data[j + 1], data[j + 2]);
+      for (let i = 0, j = 0; i < idx.length; i++, j += 4) idx[i] = nearest256(data[j], data[j + 1], data[j + 2]);
       const delay = fi === frames.length - 1 ? 200 : 50; // 0.5s frames, 2s final hold
       b(0x21, 0xF9, 4, 0, delay & 255, delay >> 8, 0, 0);
-      b(0x2C, 0, 0, 0, 0, W & 255, W >> 8, H & 255, H >> 8, 0, 4);
-      gifSubBlocks(gifLzw(idx, 4), out);
+      b(0x2C, 0, 0, 0, 0, W & 255, W >> 8, H & 255, H >> 8, 0, 8);
+      gifSubBlocks(gifLzw(idx, 8), out);
       if (fi % 5 === 0) logEngine('# gif: frame ' + (fi + 1) + '/' + frames.length);
       await new Promise(r => setTimeout(r)); // keep the UI breathing
     }
@@ -630,7 +672,7 @@ async function saveGif() {
     a.href = URL.createObjectURL(blob);
     a.download = 'trax-' + (state.variant || 'game') + '-' + total + 'ply.gif';
     a.click(); URL.revokeObjectURL(a.href);
-    logEngine('# gif: saved ' + frames.length + ' frames (' + W + 'x' + H + ')');
+    logEngine('# gif: saved ' + frames.length + ' frames (' + W + 'x' + H + ', 256c)');
   } catch (e) { showErr('gif export failed: ' + e.message); }
   btn.disabled = false;
 }
