@@ -1,23 +1,27 @@
 // Trax web UI. All game logic and validation live in the wasm engine (worker.js);
 // this file renders state, translates clicks/typing into protocol lines, and
-// drives the engine per the selected mode. Tile GIFs come from tiles/red/<size>/,
-// win-path tiles from tiles/red/<size>/win/<white|black>/.
+// drives the engine per the selected mode. Tiles are SVG (tiles/svg/<kind>.svg,
+// win-path variants under tiles/svg/win/<white|black>/) - one vector set, every
+// size crisp; the classic GIF skin's measured palette and geometry live on in
+// tools/gen_tiles_svg.py, which regenerates the set.
 
 'use strict';
 
 const $ = (id) => document.getElementById(id);
-const SIZES = { small: 40, medium: 60, large: 80 };
+const SIZES = { tiny: 15, small: 25, medium: 50, large: 75 };
+// Tiny exists for the loop variant, whose unbounded boards can sprawl far
+// beyond what 25px columns can show. SVG tiles make every size native-crisp.
 
 // Warm the tile cache: embedded-webview asset servers can drop some of the
 // dozens of simultaneous <img> requests a board render fires, leaving broken
 // tiles. Preloading the current size's 18 tiles once (sequentially, at idle)
 // makes every later render a memory-cache hit - immune to render churn.
 const KINDS = ['es', 'nw', 'ns', 'ew', 'sw', 'en'];
-function warmTiles(size) {
+function warmTiles() {
   if (typeof Image === 'undefined') return;
   const urls = [];
   for (const k of KINDS) {
-    urls.push(tileUrl(k, size, null), tileUrl(k, size, 'white'), tileUrl(k, size, 'black'));
+    urls.push(tileUrl(k, null), tileUrl(k, 'white'), tileUrl(k, 'black'));
   }
   let i = 0;
   (function next() {
@@ -102,11 +106,11 @@ function spawnWorker() {
 
 // ---------- rendering -------------------------------------------------------
 
-function tileUrl(kind, size, winner) {
-  // The GIF tile set (the original board look) ships inside the tree at
-  // web/tiles - every build stays self-contained, no external assets to forget.
-  const base = `tiles/red/${size}/`;
-  return winner ? `${base}win/${winner}/${kind}.gif` : `${base}${kind}.gif`;
+function tileUrl(kind, winner) {
+  // The SVG tile set ships inside the tree at web/tiles/svg - every build
+  // stays self-contained, no external assets to forget, one set for all sizes.
+  const base = 'tiles/svg/';
+  return winner ? `${base}win/${winner}/${kind}.svg` : `${base}${kind}.svg`;
 }
 
 function render() {
@@ -115,7 +119,7 @@ function render() {
   if (!state) return;
   const size = $('tilesize').value;
   const px = SIZES[size];
-  if (size !== warmTiles.done) { warmTiles.done = size; warmTiles(size); }
+  if (!warmTiles.done) { warmTiles.done = true; warmTiles(); }
   const showForced = $('optforced').checked;
 
   // Grid = bounding box plus one placement ring - but only on axes that can still
@@ -136,7 +140,10 @@ function render() {
   // instead (floor 24px; below that the CSS overflow scroll takes over).
   const wrap = document.getElementById('boardwrap');
   const avail = wrap && wrap.clientWidth ? wrap.clientWidth - 6 : 0; // board padding+border
-  const pxEff = avail > 0 ? Math.max(24, Math.min(px, Math.floor(avail / cols))) : px;
+  // The shrink floor must never INFLATE a deliberately tiny request: floor
+  // is min(24, chosen) so tiny=15 renders at 15, while medium+ still refuse
+  // to collapse below 24 before scroll takes over.
+  const pxEff = avail > 0 ? Math.max(Math.min(24, px), Math.min(px, Math.floor(avail / cols))) : px;
   board.style.gridTemplateColumns = `repeat(${cols}, ${pxEff}px)`;
   board.style.gridTemplateRows = `repeat(${rows}, ${pxEff}px)`;
 
@@ -168,7 +175,7 @@ function render() {
       if (prev && !placedKind && !hideForced) {
         // preview tile: the chosen one plain-preview, cascade tiles glowing
         const img = document.createElement('img');
-        tileImg(img).src = tileUrl(prev.t, size, null);
+        tileImg(img).src = tileUrl(prev.t, null);
         img.className = prev.forced && showForced ? 'tile forced' : 'tile preview';
         img.draggable = false;
         cell.appendChild(img);
@@ -187,13 +194,13 @@ function render() {
       } else if (placedKind) {
         const img = document.createElement('img');
         const asWin = winner && winCells.has(key) ? winner : null;
-        tileImg(img).src = tileUrl(placedKind, size, asWin);
+        tileImg(img).src = tileUrl(placedKind, asWin);
         img.className = 'tile';
         img.draggable = false;
         // a committed tile being re-covered by a forced cascade in the preview
         if (prev && prev.forced && showForced) {
           const ov = document.createElement('img');
-          ov.src = tileUrl(prev.t, size, null);
+          ov.src = tileUrl(prev.t, null);
           ov.className = 'tile forced overlay';
           ov.draggable = false;
           cell.appendChild(img);
