@@ -106,11 +106,15 @@ function spawnWorker() {
 
 // ---------- rendering -------------------------------------------------------
 
+// The eighth liar: tiles were the only asset without the ?v= build stamp,
+// so through the whole 297-305 art arc the CDN and browser could serve any
+// stale mix of tile generations - three operator verdicts may have judged
+// art that was not deployed. Stamped like everything else now; what the eye
+// sees is finally what the build ships.
+const TILE_Q = (typeof window !== 'undefined' && window.CACHEBUST) ? ('?v=' + window.CACHEBUST) : '';
 function tileUrl(kind, winner) {
-  // The SVG tile set ships inside the tree at web/tiles/svg - every build
-  // stays self-contained, no external assets to forget, one set for all sizes.
   const base = 'tiles/svg/';
-  return winner ? `${base}win/${winner}/${kind}.svg` : `${base}${kind}.svg`;
+  return (winner ? `${base}win/${winner}/${kind}.svg` : `${base}${kind}.svg`) + TILE_Q;
 }
 
 function render() {
