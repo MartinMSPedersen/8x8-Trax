@@ -38,7 +38,11 @@ main { display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: flex-start; }
 #controls { flex: 0 0 300px; display: flex; flex-direction: column; gap: .8rem; }
 fieldset { border: 1px solid rgba(127,127,127,.4); border-radius: 6px; }
 fieldset label { display: block; margin: .15rem 0; }
-.btnrow { display: flex; gap: .5rem; flex-wrap: wrap; }
+/* The game-action grid, laid out by the operator's hand: two even columns,
+   New game | Save GIF on the first row, Load game | Save game on the second
+   (DOM order fills the grid). Equal cells, tidy rows. */
+.btnrow { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.btnrow button { min-width: 0; white-space: nowrap; }
 button { padding: .4rem .8rem; cursor: pointer; }
 .mono { font-family: ui-monospace, monospace; font-size: .82rem; }
 #history { word-break: break-word; min-height: 1.2em; }

@@ -106,11 +106,15 @@ function spawnWorker() {
 
 // ---------- rendering -------------------------------------------------------
 
+// The eighth liar: tiles were the only asset without the ?v= build stamp,
+// so through the whole 297-305 art arc the CDN and browser could serve any
+// stale mix of tile generations - three operator verdicts may have judged
+// art that was not deployed. Stamped like everything else now; what the eye
+// sees is finally what the build ships.
+const TILE_Q = (typeof window !== 'undefined' && window.CACHEBUST) ? ('?v=' + window.CACHEBUST) : '';
 function tileUrl(kind, winner) {
-  // The SVG tile set ships inside the tree at web/tiles/svg - every build
-  // stays self-contained, no external assets to forget, one set for all sizes.
   const base = 'tiles/svg/';
-  return winner ? `${base}win/${winner}/${kind}.svg` : `${base}${kind}.svg`;
+  return (winner ? `${base}win/${winner}/${kind}.svg` : `${base}${kind}.svg`) + TILE_Q;
 }
 
 function render() {
@@ -521,6 +525,173 @@ async function loadFile(ev) {
 
 // ---------- wiring -----------------------------------------------------------
 
+
+// ---- Save GIF: the whole game as an animated gif, one frame per ply ----
+// Frames ride the same HIST/snapshots machinery as the history viewer, so the
+// export shows exactly what the viewer shows; the final frame is the live end
+// state with the win path highlighted. Encoding is a self-contained GIF89a
+// writer (16-colour global palette - the board is flat-colour by construction,
+// so nearest-mapping antialiased edges to the measured palette is invisible at
+// gif scale). 0.5 s per frame (delay 50 cs), 2 s hold on the last. No
+// libraries: every build stays self-contained.
+const GIF_PAL = [0x202020, 0xE22000, 0xFFFFFF, 0x000000, 0xFFFF40, 0x0000C0, 0xFF4040, 0x800000];
+function gifNearest(r, g, b) {
+  let best = 0, bd = Infinity;
+  for (let i = 0; i < GIF_PAL.length; i++) {
+    const p = GIF_PAL[i], dr = r - (p >> 16), dg = g - ((p >> 8) & 255), db = b - (p & 255);
+    const d = dr * dr + dg * dg + db * db;
+    if (d < bd) { bd = d; best = i; }
+  }
+  return best;
+}
+function gifLzw(indices, minCode) {
+  const out = []; let cur = 0, bits = 0;
+  const emit = (code, size) => { cur |= code << bits; bits += size;
+    while (bits >= 8) { out.push(cur & 255); cur >>= 8; bits -= 8; } };
+  const CLEAR = 1 << minCode, EOI = CLEAR + 1;
+  let size = minCode + 1, next = EOI + 1, dict = new Map();
+  emit(CLEAR, size);
+  let prev = indices[0];
+  for (let i = 1; i < indices.length; i++) {
+    const k = (prev << 12) | indices[i];
+    if (dict.has(k)) { prev = dict.get(k); continue; }
+    emit(prev, size);
+    if (next < 4096) { dict.set(k, next++); if (next - 1 === 1 << size && size < 12) size++; }
+    else { emit(CLEAR, size); size = minCode + 1; next = EOI + 1; dict = new Map(); }
+    prev = indices[i];
+  }
+  emit(prev, size); emit(EOI, size);
+  if (bits > 0) out.push(cur & 255);
+  return out;
+}
+function gifSubBlocks(bytes, out) {
+  for (let i = 0; i < bytes.length; i += 255) {
+    const n = Math.min(255, bytes.length - i);
+    out.push(n); for (let j = 0; j < n; j++) out.push(bytes[i + j]);
+  }
+  out.push(0);
+}
+function loadImg(url) {
+  return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = url; });
+}
+async function saveGif() {
+  const total = state ? (state.moves || []).length : 0;
+  if (!total) { showErr('no game to export'); return; }
+  const btn = $('savegif'); btn.disabled = true;
+  try {
+    // Gather every frame's data first (snapshots cache serves repeats).
+    const frames = [];
+    for (let k = 1; k < total; k++) {
+      let d = snapshots[k];
+      if (!d) {
+        const r = await send('HIST ' + k);
+        if (!(r && r.ok)) throw new Error('HIST ' + k + ' failed');
+        d = snapshots[k] = { tiles: r.tiles, bbox: r.bbox, last: r.last };
+      }
+      frames.push({ tiles: d.tiles, bbox: d.bbox, win: null });
+    }
+    const wn = state.result === 'white' || state.result === 'black' ? state.result : null;
+    const wc = new Set((state.winCells || []).map((w) => `${w.c},${w.r}`));
+    frames.push({ tiles: state.tiles, bbox: state.bbox, win: wn ? { winner: wn, cells: wc } : null });
+    // Union bbox: one stable canvas, no jumping as the board grows.
+    let c0 = Infinity, c1 = -Infinity, r0 = Infinity, r1 = -Infinity;
+    for (const f of frames) { c0 = Math.min(c0, f.bbox.minCol); c1 = Math.max(c1, f.bbox.maxCol);
+                              r0 = Math.min(r0, f.bbox.minRow); r1 = Math.max(r1, f.bbox.maxRow); }
+    const px = 60, W = (c1 - c0 + 1) * px, H = (r1 - r0 + 1) * px;
+    const imgs = new Map();
+    // Sharpness: an SVG with only a viewBox has a browser-default intrinsic
+    // size, and drawImage then scales that bitmap - blur. Injecting explicit
+    // width/height makes the browser rasterize the vector at exactly px.
+    const loadImgSized = async (url, size) => {
+      const txt = await (await fetch(url)).text();
+      const sized = txt.replace('<svg ', '<svg width="' + size + '" height="' + size + '" ');
+      const bu = URL.createObjectURL(new Blob([sized], { type: 'image/svg+xml' }));
+      try { return await loadImg(bu); } finally { URL.revokeObjectURL(bu); }
+    };
+    const need = (u) => { if (!imgs.has(u)) imgs.set(u, loadImgSized(u, px)); };
+    for (const f of frames) for (const t of f.tiles)
+      need(tileUrl(t.t, f.win && f.win.cells.has(t.c + ',' + t.r) ? f.win.winner : null));
+    for (const [u, p] of imgs) imgs.set(u, await p);
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d', { willReadFrequently: true });
+    const renderFrame = (f) => {
+      ctx.fillStyle = '#202020'; ctx.fillRect(0, 0, W, H);
+      for (const t of f.tiles) {
+        const w = f.win && f.win.cells.has(t.c + ',' + t.r) ? f.win.winner : null;
+        ctx.drawImage(imgs.get(tileUrl(t.t, w)), (t.c - c0) * px, (t.r - r0) * px, px, px);
+      }
+    };
+    // Two passes for a global adaptive palette. Pass 1 renders every frame
+    // only to accumulate a 5-bit-bucket colour histogram (no pixel retention,
+    // so memory stays flat on phones); the palette is the 8 measured core
+    // colours exact plus the most populous bucket means - anti-aliased edge
+    // blends get real entries instead of nearest-core speckle. Pass 2
+    // re-renders (drawImage is cheap next to LZW) and indexes.
+    const bucketOf = (r, g, b2) => ((r >> 3) << 10) | ((g >> 3) << 5) | (b2 >> 3);
+    const hist = new Map();
+    for (const f of frames) {
+      renderFrame(f);
+      const d = ctx.getImageData(0, 0, W, H).data;
+      for (let j = 0; j < d.length; j += 4) {
+        const bk = bucketOf(d[j], d[j + 1], d[j + 2]);
+        let e = hist.get(bk); if (!e) hist.set(bk, e = { n: 0, r: 0, g: 0, b: 0 });
+        e.n++; e.r += d[j]; e.g += d[j + 1]; e.b += d[j + 2];
+      }
+      await new Promise(r => setTimeout(r));
+    }
+    const pal = GIF_PAL.slice();
+    const bucketIdx = new Map();
+    for (let i = 0; i < pal.length; i++) bucketIdx.set(bucketOf(pal[i] >> 16, (pal[i] >> 8) & 255, pal[i] & 255), i);
+    const ranked = [...hist.entries()].filter(([bk]) => !bucketIdx.has(bk)).sort((a, b2) => b2[1].n - a[1].n);
+    for (const [bk, e] of ranked) {
+      if (pal.length >= 256) break;
+      bucketIdx.set(bk, pal.length);
+      pal.push((Math.round(e.r / e.n) << 16) | (Math.round(e.g / e.n) << 8) | Math.round(e.b / e.n));
+    }
+    while (pal.length < 256) pal.push(0);
+    const memo = new Map();
+    const nearest256 = (r, g, b2) => {
+      const bk = bucketOf(r, g, b2);
+      let v = bucketIdx.get(bk); if (v !== undefined) return v;
+      v = memo.get(bk); if (v !== undefined) return v;
+      let bi = 0, bd = Infinity;
+      for (let i = 0; i < 256; i++) {
+        const p = pal[i], dr = r - (p >> 16), dg = g - ((p >> 8) & 255), db = b2 - (p & 255);
+        const dd = dr * dr + dg * dg + db * db; if (dd < bd) { bd = dd; bi = i; }
+      }
+      memo.set(bk, bi); return bi;
+    };
+    const out = [];
+    const b = (...xs) => out.push(...xs);
+    b(71, 73, 70, 56, 57, 97);                       // GIF89a
+    b(W & 255, W >> 8, H & 255, H >> 8, 0xF7, 0, 0); // GCT: 256 entries
+    for (let i = 0; i < 256; i++) { const p = pal[i]; b(p >> 16, (p >> 8) & 255, p & 255); }
+    b(0x21, 0xFF, 11, 78, 69, 84, 83, 67, 65, 80, 69, 50, 46, 48, 3, 1, 0, 0, 0); // loop forever
+    for (let fi = 0; fi < frames.length; fi++) {
+      renderFrame(frames[fi]);
+      const data = ctx.getImageData(0, 0, W, H).data;
+      const idx = new Uint8Array(W * H);
+      for (let i = 0, j = 0; i < idx.length; i++, j += 4) idx[i] = nearest256(data[j], data[j + 1], data[j + 2]);
+      const delay = fi === frames.length - 1 ? 350 : 50; // 0.5s frames, 3.5s final hold
+      b(0x21, 0xF9, 4, 0, delay & 255, delay >> 8, 0, 0);
+      b(0x2C, 0, 0, 0, 0, W & 255, W >> 8, H & 255, H >> 8, 0, 8);
+      gifSubBlocks(gifLzw(idx, 8), out);
+      if (fi % 5 === 0) logEngine('# gif: frame ' + (fi + 1) + '/' + frames.length);
+      await new Promise(r => setTimeout(r)); // keep the UI breathing
+    }
+    b(0x3B);
+    const blob = new Blob([new Uint8Array(out)], { type: 'image/gif' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'trax-' + (state.variant || 'game') + '-' + total + 'ply.gif';
+    a.click(); URL.revokeObjectURL(a.href);
+    logEngine('# gif: saved ' + frames.length + ' frames (' + W + 'x' + H + ', 256c)');
+  } catch (e) { showErr('gif export failed: ' + e.message); }
+  btn.disabled = false;
+}
+
+// Harness-tolerant wiring: uicheck's DOM stub predates this button.
+{ const sg = $('savegif'); if (sg) sg.addEventListener('click', saveGif); }
 $('commitbtn').addEventListener('click', commit);
 // Right-click commits: with a preview staged, the second hand never has to
 // travel to the button - left cycles, right confirms. The browser's context
