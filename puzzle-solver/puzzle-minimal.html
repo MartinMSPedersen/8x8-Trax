@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<!-- The minimal form: no UI, no worker - just the engine call chain, with
+     the answer parked in globals for the console or your own code:
+
+         window.result     - the full ENGINE response (new state + .engine)
+         window.engineMove - the token the engine played
+         window.verdict    - the last depth line, e.g. "depth 7  score +M7 ..."
+
+     Serve beside trax.wasm (python3 -m http.server), open, then inspect
+     `result` in DevTools. Main-thread blocking during the think is fine
+     here: there is nothing to block. Boots with zero knowledge, by
+     doctrine - depth is king in a puzzle (WasmEmbed.md explains).
+     All progress and errors go to the console - headless, not silent. -->
+<html><head><meta charset="utf-8"><title>trax minimal</title></head><body>
+<script type="module">
+const PUZZLE = ['@0+', 'B1/', '@1/', 'D1/'];
+const BUDGET_MS = 10000;
+
+const enc = new TextEncoder(), dec = new TextDecoder();
+let ex;
+const writeStr = (s) => {
+  const b = enc.encode(s), p = ex.tx_alloc(b.length);
+  new Uint8Array(ex.memory.buffer, p, b.length).set(b);
+  return [p, b.length];
+};
+const readResp = (len) => {
+  const p = ex.tx_resp_ptr();
+  return dec.decode(new Uint8Array(ex.memory.buffer).slice(p, p + len));
+};
+const call = (line) => {
+  const [p, l] = writeStr(line);
+  const out = readResp(ex.tx_call(p, l));
+  ex.tx_dealloc(p, l);
+  return JSON.parse(out);
+};
+
+try {
+  const bytes = await (await fetch(new URL('trax.wasm', location.href))).arrayBuffer();
+  const { instance } = await WebAssembly.instantiate(bytes, {
+    env: {
+      js_now_ms: () => performance.now(),
+      js_on_depth: (ptr, len) =>
+        console.log(dec.decode(new Uint8Array(instance.exports.memory.buffer).slice(ptr, ptr + len))),
+    },
+  });
+  ex = instance.exports;
+
+  // Bare boot, by doctrine: puzzles load no knowledge (threats cost ~6x
+  // per node and buy judgement a mate hunt does not need - WasmEmbed.md).
+  const parts = ['', '', '', '', '', ''].map(writeStr);
+  console.log('init:', readResp(ex.tx_init(...parts.flat())));
+  parts.forEach(([p, l]) => ex.tx_dealloc(p, l));
+
+  call('VARIANT loop');
+  for (const mv of PUZZLE) {
+    const r = call('PLAY ' + mv);
+    if (r.ok === false) throw new Error('PLAY ' + mv + ': ' + r.error);
+  }
+
+  window.result = call('ENGINE ' + BUDGET_MS + ' 0 0 1');
+  window.engineMove = result.engine.move;
+  window.verdict = result.engine.lines[result.engine.lines.length - 1];
+  console.log('engineMove:', engineMove);
+  console.log('verdict:', verdict);
+} catch (err) {
+  console.error(err);
+  window.result = { error: String(err) };
+}
+</script></body></html>

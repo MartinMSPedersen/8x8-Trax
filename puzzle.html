@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<!-- Trax puzzle solver: a complete, dependency-free example of driving
+     trax.wasm from JavaScript. Serve this file NEXT TO trax.wasm:
+
+         python3 -m http.server        # then open http://localhost:8000/puzzle.html
+
+     (fetch() cannot load wasm from file:// - the one-line server is the fix.)
+
+     The puzzle: @0+ B1/ @1/ D1/  - unlimited Loop Trax, White to move.
+     Observed on rust310: the engine announces a FORCED LOOP (mate in 7,
+     value 999993) playing B2\ after ~6s of a 10s budget, ~950k nodes. -->
+<html>
+<head><meta charset="utf-8"><title>Trax loop puzzle</title>
+<style>
+  body { font-family: monospace; max-width: 720px; margin: 2em auto; }
+  #log { white-space: pre-wrap; background: #f4f4f4; padding: 1em; min-height: 12em; }
+  .verdict { font-size: 1.2em; font-weight: bold; margin: 0.6em 0; }
+</style></head>
+<body>
+<h1>Unlimited Loop Trax - puzzle solver</h1>
+<p>Puzzle: <b id="puz"></b> &nbsp; budget: <b>10 s</b></p>
+<div class="verdict" id="verdict">thinking&hellip;</div>
+<div id="log"></div>
+
+<script>
+const PUZZLE = ['@0+', 'B1/', '@1/', 'D1/'];   // the position, as its move list
+const BUDGET_MS = 10000;                        // the hard clock
+
+document.getElementById('puz').textContent = PUZZLE.join(' ');
+const log = (s) => { document.getElementById('log').textContent += s + '\n'; };
+
+// ---- The engine runs in a Worker so the 10s think never blocks the page.
+// The worker's source is inlined here (Blob URL) so this stays ONE file.
+const workerSrc = `
+  const enc = new TextEncoder(), dec = new TextDecoder();
+  let ex = null;
+
+  function writeStr(s) {
+    const b = enc.encode(s);
+    const p = ex.tx_alloc(b.length);
+    new Uint8Array(ex.memory.buffer, p, b.length).set(b);
+    return [p, b.length];
+  }
+  function readResp(len) {
+    const p = ex.tx_resp_ptr();
+    return dec.decode(new Uint8Array(ex.memory.buffer).slice(p, p + len));
+  }
+  function call(line) {
+    const [p, l] = writeStr(line);
+    const out = readResp(ex.tx_call(p, l));
+    ex.tx_dealloc(p, l);
+    return JSON.parse(out);
+  }
+
+  onmessage = async (e) => {
+   try {
+    const { wasmUrl, moves, budget } = e.data;
+    const resp = await fetch(wasmUrl);
+    if (!resp.ok) throw new Error('fetch ' + wasmUrl + ' -> HTTP ' + resp.status + ' (is trax.wasm beside this page?)');
+    const bytes = await resp.arrayBuffer();
+    const { instance } = await WebAssembly.instantiate(bytes, {
+      env: {
+        js_now_ms: () => performance.now(),          // THE ENGINE'S CLOCK
+        js_on_depth: (ptr, len) => {                 // per-depth progress
+          const line = dec.decode(new Uint8Array(instance.exports.memory.buffer).slice(ptr, ptr + len));
+          postMessage({ progress: line });
+        },
+      },
+    });
+    ex = instance.exports;
+
+    // Bare boot, by doctrine: six empty knowledge texts. Books never fire
+    // under loop, and threat patterns cost ~6x per node - depth is king in
+    // a tactical hunt, so the puzzle solver deliberately loads NOTHING
+    // (measured trade-off: WasmEmbed.md, "Adding the threat patterns").
+    const parts = ['', '', '', '', '', ''].map(writeStr);
+    readResp(ex.tx_init(...parts.flat()));
+    parts.forEach(([p, l]) => ex.tx_dealloc(p, l));
+
+    call('VARIANT loop');
+    for (const mv of moves) {
+      const r = call('PLAY ' + mv);
+      if (r.ok === false) { postMessage({ error: mv + ': ' + r.error }); return; }
+    }
+    // The ask: ENGINE time_ms depth noise seed. depth 0 = the clock rules.
+    // The engine CHOOSES AND PLAYS its move; the response is the full new
+    // state with the analysis nested under .engine.
+    const st = call('ENGINE ' + budget + ' 0 0 1');
+    postMessage({ done: st });
+   } catch (err) {
+    // EVERYTHING lands on the page - a silent worker is a debugging tarpit.
+    postMessage({ error: String(err && err.stack || err) });
+   }
+  };
+`;
+const worker = new Worker(URL.createObjectURL(new Blob([workerSrc], { type: 'text/javascript' })));
+worker.onerror = (e) => { document.getElementById('verdict').textContent = 'worker error'; log(String(e.message || e)); };
+
+worker.onmessage = (e) => {
+  const m = e.data;
+  if (m.progress) { log(m.progress); return; }
+  if (m.error)    { document.getElementById('verdict').textContent = 'error (details below)'; log(m.error); return; }
+  const st = m.done, eng = st.engine;
+  const last = eng.lines[eng.lines.length - 1];             // e.g. "depth 7  score +M7 ... pv B2\\ ..."
+  const mate = /score \+M(\d+)/.exec(last);
+  document.getElementById('verdict').textContent =
+    'engine plays ' + eng.move +
+    (mate ? '  -  forced loop in ' + mate[1] + ' plies' : '  -  eval ' + eng.value) +
+    '   (depth ' + eng.depth + ', ' + eng.nodes.toLocaleString() + ' nodes, ' + eng.ms + ' ms)';
+  log('\nfinal line: ' + last);
+  log('position after the engine move: over=' + st.over + '  toMove=' + st.toMove + '  moves=' + st.moveCount);
+};
+
+// Resolve the wasm URL HERE, on the page: a Blob-URL worker has no base
+// for relative fetches (blob: URLs are not hierarchical), so 'trax.wasm'
+// alone rejects inside the worker - the bug behind the original example's
+// silent hang.
+worker.postMessage({ wasmUrl: new URL('trax.wasm', location.href).href, moves: PUZZLE, budget: BUDGET_MS });
+</script>
+</body>
+</html>
