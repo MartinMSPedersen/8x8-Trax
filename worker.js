@@ -104,7 +104,44 @@ async function boot() {
   if (!initR.ok) throw new Error('engine init failed: ' + initR.error);
   let build = '';
   try { build = JSON.parse(call('VERSION')).build || ''; } catch (e) { /* older wasm */ }
-  postMessage({ ready: true, threats: initR.threats, book: initR.book, replies: initR.replies || 0, build });
+  // Size the persistent TT to the device (rust331). No browser reports its
+  // true eviction budget, so this is a tiered heuristic at ~98 MB per million
+  // entries: navigator.deviceMemory when present (Chromium only, quantized
+  // 0.25..8 GB, absent on Safari/Firefox), else phone-vs-desktop from the
+  // user agent and touch signals. Phones evict a 1 GB tab; laptops shrug.
+  const ttCap = chooseTtCap();
+  try { call('TT_CAP ' + ttCap.entries); } catch (e) { /* older wasm: default stands */ }
+  postMessage({ ready: true, threats: initR.threats, book: initR.book, replies: initR.replies || 0, build,
+                ttCap: ttCap.entries, ttTier: ttCap.tier });
+}
+
+// Device -> TT entry cap. Exported shape for embedders: {entries, tier}.
+function chooseTtCap() {
+  const nav = (typeof navigator !== 'undefined') ? navigator : {};
+  const ua = (nav.userAgent || '').toLowerCase();
+  const phoneUa = /iphone|ipod|android.*mobile|windows phone|mobile safari/.test(ua);
+  const tabletUa = /ipad|android(?!.*mobile)|tablet/.test(ua);
+  const touchOnly = (nav.maxTouchPoints || 0) > 1 && !/windows nt/.test(ua) && !/macintosh/.test(ua);
+  const dm = nav.deviceMemory; // GB, quantized; undefined on Safari/Firefox
+  let tier, entries;
+  const isPhone = phoneUa || (touchOnly && !tabletUa);
+  if (typeof dm === 'number') {
+    // Spend about a quarter of reported RAM, capped at the build default (1 GB).
+    if (dm <= 1)      { tier = 'tiny (<=1 GB)';    entries = 1_000_000; }   // ~100 MB
+    else if (dm <= 2) { tier = 'small (2 GB)';     entries = 2_000_000; }   // ~200 MB
+    else if (dm <= 4) { tier = 'medium (4 GB)';    entries = 5_000_000; }   // ~500 MB
+    else              { tier = 'large (>=8 GB)';   entries = 10_000_000; }  // ~1 GB, the default
+    // Phones evict by TAB size, not RAM headroom: a 4 GB phone still loses a
+    // 500 MB tab. Phone-ness caps the memory tier at the safe phone number.
+    if (isPhone && entries > 2_000_000) { entries = 2_000_000; tier += ', phone-capped'; }
+  } else if (isPhone) {
+    tier = 'phone (UA)';   entries = 2_000_000;   // ~200 MB - the safe phone number
+  } else if (tabletUa) {
+    tier = 'tablet (UA)';  entries = 4_000_000;   // ~400 MB
+  } else {
+    tier = 'desktop (UA)'; entries = 10_000_000;  // ~1 GB
+  }
+  return { entries, tier };
 }
 
 const queue = [];

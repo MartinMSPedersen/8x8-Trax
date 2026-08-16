@@ -78,6 +78,10 @@ function spawnWorker() {
       engineBuild = d.build || engineBuild;
       queuedKnowledge = knowledgeLine(d);
       $('knowledge').textContent = queuedKnowledge;
+      // Device-sized TT: the worker chose a cap for this machine; say so once
+      // in the engine pane so a phone player understands the smaller table.
+      if (d.ttCap && $('optoutput') && $('optoutput').checked)
+        logEngine('# tt: cap ' + (d.ttCap / 1e6) + 'M entries (~' + Math.round(d.ttCap * 98 / 1e6) + ' MB) - ' + d.ttTier);
       // The ready counts describe the boot (8x8) session; if the page is on a
       // different variant, ask the post-switch session for ITS counts.
       if ($('variant').value !== '8x8') refreshKnowledge();
