@@ -60,7 +60,7 @@ try {
   window.result = call('ENGINE ' + BUDGET_MS + ' 0 0 1');
   window.engineMove = result.engine.move;
   window.verdict = result.engine.lines[result.engine.lines.length - 1];
-  console.log('engineMove:', engineMove);
+  console.log('engineMove:', engineMove, ' eval:', result.engine.valueText);  // valueText: human form
   console.log('verdict:', verdict);
 } catch (err) {
   console.error(err);

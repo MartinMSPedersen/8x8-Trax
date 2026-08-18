@@ -105,7 +105,7 @@ worker.onmessage = (e) => {
   const mate = /score \+M(\d+)/.exec(last);
   document.getElementById('verdict').textContent =
     'engine plays ' + eng.move +
-    (mate ? '  -  forced loop in ' + mate[1] + ' plies' : '  -  eval ' + eng.value) +
+    (mate ? '  -  forced loop in ' + mate[1] + ' plies' : '  -  eval ' + (eng.valueText || eng.value)) +
     '   (depth ' + eng.depth + ', ' + eng.nodes.toLocaleString() + ' nodes, ' + eng.ms + ' ms)';
   log('\nfinal line: ' + last);
   log('position after the engine move: over=' + st.over + '  toMove=' + st.toMove + '  moves=' + st.moveCount);
