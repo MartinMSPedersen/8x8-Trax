@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Read a W/B/+/- string from stdin, write SVG to stdout.
 
-Usage: echo 'W+WBBW+W 5 2 2 0 0 1,0/ 1,3\' | ./wb2svg.py > out.svg
+Usage: echo 'W+WBBW+W 5 2 2 0 0 1,0/ 1,3\' | ./threat2svg.py > out.svg
 """
 import sys
 from math import ceil, floor
