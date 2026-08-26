@@ -1,3 +1,4 @@
+WaW+WWaBB+BWbW+WBWb 7 2 2 1 1 4,1\
 WaWbB+WbBWaB+B-W+W 5 1 2 1 0 3,1+
 WaWbB+WbBWaB+B-Wc+BWc 5 1 2 1 0 3,1+
 WaWbB+WbBWaB+BBW+W 7 1 2 2 0 3,1+
