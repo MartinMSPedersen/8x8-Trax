@@ -1,127 +1,123 @@
-B+BB+WB-W+W-B 3 0 0 0 0 1,0+
-B+B-W+W-BW-B+W+W 5 1 1 0 0 4,0/
-B+B-W+W-BW-BB+B 3 1 0 0 0 3,0+
-B-WaBB-W+B+WWa 3 1 0 0 2 0,-1/
-B-WaB-W+B+WWa 3 1 0 0 2 0,-1/
-BWaWbB+B+Wb-BWa 7 3 0 0 1 1,-1/
-W+B-W+W-B+WB-W+W 7 1 0 0 2 0,-1\
-W+BWaB-Wb+BWb 3 1 1 0 0 1,0+
-W+W+B-Wa+B-Wa+B-W+W 5 0 1 1 0 0,1\
-W+W-B+BB-WaB+Wa 5 1 1 0 0 3,2+
-W+W-B+BWa+BWaW-BWW+W 7 1 1 0 1 2,-1+
-W+W-B+BWBB-W+W 5 1 1 0 0 2,2+
-W+W-B+Wa-B+BWa 5 1 2 0 0 3,2+
-W+WB+Wa-B+Wa 5 1 2 1 0 1,0/
-W+W-B+Wa-B+Wa-B+W 5 3,2/
-W+W-B+WaBBWa 7 2 2 0 0 0,-1/
-W+W-BB+B+Wa-B+WaWWbW+WWb 7 1 1 3 1 1,3\
-W+WBB+BWa+B-Wa 7 2 2 0 1 3,1\
-W+W-BB+WaW+WBWa 3 1 0 0 1 2,0\
-W+W-BB+WB-B 3 0,-1/
-W+WBBB+BWa+B-Wa 7 2 2 1 1 4,1\
+WaWbB+WbBWaB+B-W+W 5 1 2 1 0 3,1+
+WaWbB+WbBWaB+B-Wc+BWc 5 1 2 1 0 3,1+
+WaWbB+WbBWaB+BBW+W 7 1 2 2 0 3,1+
 W+WBBBB-W+W 7 1 2 0 0 1,0/
-W+W-BBBB-W+W 7 1 2 0 0 1,0/ 2,5/
-W+W-BBB-WaB+Wa 5 1 2 0 0 1,0/
-W+W-BBBWB+BB-WaWbB+WbWa 7 2 1 0 0 6,2/
-W+WBB-W+W 3 1 1 0 0 1,0/
-W+W-BB-W+W 3 2 0 0 0 0,-1/ 3,-1\
-W+WBBW+W 5 2 2 0 0 1,0/ 1,3\
-W+WBB-WaB+Wa+BB 3 1 1 0 0 1,0/
-W+W-BB-WaB+Wa 3 0 1 0 1 1,0\ 
-W+WBBWa-B+Wa 5 1 0 0 1 4,-2\
-W+WBBWaB+Wa 5 2 2 0 0 1,0/ 1,4+
-W+WBBWaW+WBWa 5 1 2 1 0 1,0/ 1,3\
-W+W-BBWBW+W 3 1 1 0 1 4,0+
-W+WBBWBW+W 5 2 1 0 1 0,-1\ 5,-1/
-W+WBBWBW+W 5 2 1 1 0 0,-1\
-W+W-BBWWa-B+BWa 3 1 0 0 0 3,0+
-W+W-BW+B+BW-BBW+W 5 1 1 1 0 1,4\ 2,0/
-W+WB-W+B+WWa-B+Wa 5 1 1 1 0 1,3\
-W+WB-W+W 3 1 1 0 0 1,0/
-W+WB-Wa+BWa 3 1 1 0 0 1,0/
-W+W-BWa+BWa 3 1 1 0 0 2,0/
-W+WB-WaB+Wa+BB-W+W 9 1 2 1 0 2,1+
-W+W-BWaWb+B+WbWa 3 1 0 1 0 2,0/
-W+W-BWaWb+BB+WbWa 3 1 0 1 0 2,0/
-W+WBWB+Wa-B+Wa 5 2 1 0 1 0,-1\
-W+WBWBB+BWBWa+Bwa 7 1 2 2 1 -3,5/
-W+W-BWBB-W+B 3 1 0 0 0 2,0+ 4,0\
-W+W-BWBW+WW+WBWB-W+W 3 1 1 1 0 4,0/ 4,3\
-W+W-BWBW+WW+WBWBWa-B+Wa 3 1 1 1 0 4,0/ 4,3\
-W+WB-WB-WB-W+WW+W 5 1 1 0 0 4,0/
-W+WB-WB-WB-W+WWa+BWa 5 1 1 0 0 4,0/
-W+WB-WB-WB-W+WWaB+BWa 5 1 1 0 0 5,0+
-W+WB-WB-WB-W+WWaB+Wa 5 1 1 0 0 5,0+
-W+W-BWWa-B+Wa+B 3 1 0 0 0 2,0+
-W+WW+W-BW-B+W+W 7 1 2 1 0 1,0/ 1,4\
-W+WW+W-BW-BB+B 5 1 1 0 0 1,0/
-W+WWa-B+Wa 3 1 1 0 0 1,0/
-W+WwaBBBWa 5 1 1 0 0 1,0/
-W+WwaBBWa 5 1 1 0 0 1,0/
-W+WWaBBWa 5 2 0 0 1 0,-1\
-W+W-WaB-W+B+WWa 5 1 1 1 0 1,0/
-W+WWaWb-B+B+WbBBa 5 1 1 0 1 0,-1\
-W+WWaWb-B+W+WBB+Wb-BWa 5 1 0 0 1 1,0\
-W+WWaWb-B+W+WWbWa 5 1 1 0 1 0,-1\
-Wa+BB-WaBW+W 3 1 1 0 0 3,1/
-Wa+B-Wa+B-W+W 5 1 2 0 1 3,2/
-Wa+B-Wa+BW+W 5 1 2 1 0 2,2\
-Wa+B-Wa+B-WbB+Wb 5 1 2 0 1 4,2/
-Wa+B-Wa+BWbB+Wb 5 1 2 1 0 2,3+
-Wa+B-Wa+BWB-W+W 5 1 0 0 1 2,2+
-Wa+B-Wa+B-WbW+WWb 5 2 1 0 0 0,-1/
-Wa+BWaB+Wb-B+Wb 5 1 2 1 0 1,0+
-Wa+BWa-BB+BBWWb-B+BWb 7 2 1 0 0 3,4+
-Wa+BWaBB-W+W 3 1 1 0 0 1,0+
-Wa+B-WaBBW+W 5 0 1 2 0 4,2
-Wa+BWaBBWbB+Wb 5 2 2 0 0 1,0+ 1,5+
-Wa+BWaB-W+W 3 1 1 0 0 1,0+
-Wa+BWaBWB+BBWBW+W 7 1 2 2 1 1,0+
-Wa+B-WaW+W 3 1 1 0 1 2,0/
-Wa+B-WaWb+BWb 3 1 1 0 1 2,0/
-WaB+BWaBBW+W 5 2 2 0 0 2,0+ 2,4\
-WaB+BWaBBWbB+BWb 5 2 2 0 0 2,0+ 2,5+
-WaB+BWaBBWBWbB+WWb 5 2 1 1 0 0,-1+
-WaB+BWaB-W+W 3 1 1 0 0 2,0+
-WaB+BWaWb-B+Wb 3 1 0 0 1 0,-2+
-WaB+WaB+B-W+W 5 1 2 1 0 2,0/
-WaB+WaB+B-WbWcW+WW+WWcBWb 5 1 2 0 1 2,0/
-Wa-B+Wa-B+Wb-B+Wb 5 0 2 0 0 4,3/
-WaB+WaBB-W+W 3 1 1 0 0 2,0/
-WaB+WaB-W+W 3 1 1 0 0 2,0/
-WaB+WaBWB+B-W+W 5 1 2 1 0 2,0/
-WaB+WaWbWc-B+W+WBB+Wc-BWb 5 1 0 0 1 2,0\
-WaB+WB+B-W+W 5 1 2 1 0 2,0/
-WaBBBWaW+W 5 2 1 0 0 5,-1/
-WaBBWaW+W 5 2 1 0 0 4,-1/
-WaBBWaWBW+W 5 2 1 0 0 6,-1/
-WaB-W+WWaB+B-W+W 5 2 1 0 0 2,-2/
-WaBW+WWaBBBW+W 5 2 1 0 1 0,-3/ 5,-3/
-WaBW+WWaBBW+W 5 2 1 0 1 0,-3/ 4,-3/
-Wa-BWb+B+BWbWa 7 1 2 1 0 2,1\
-WaBWb+B+B-WbWaW 5 2,3\
-WaB-WbW+WB+W+W-BBWb+B+Wa 5 1 1 1 0 3,2\
-WaBWbW+WW+WWbWa-B+W 5 1 1 1 0 3,2\
 WaW+W-BWa-B+Wb+B-Wb 5 1 0 0 0 4,-1/
 WaW+WWa-BB+BB+BWbW+WWb 9 1 2 1 0 2,0/ 2,4/
 WaW+WWa-BB+BBW+W 7 1 2 1 0 2,0/ 4,4\
-WaW+WWaBB+BWbW+WBWb 7 2 2 1 1 4,1\
-WaW+WWaBBWb+BWb 5 1 2 1 0 2,4\
-WaWb+BB+BWbWaB 7 1 1 3 1 0,3\
-WaWbB+B+WbB-WaW+B 3 1 0 1 0 1,2\
+W+W-BB+B+Wa-B+WaWWbW+WWb 7 1 1 3 1 1,3\
+WaB+WB+B-W+W 5 1 2 1 0 2,0/
+Wa+B-Wa+BW+W 5 1 2 1 0 2,2\
+W+W-BBWBW+W 3 1 1 0 1 4,0+
+W+WW+W-BW-BB+B 5 1 1 0 0 1,0/
+B+B-W+W-BW-BB+B 3 1 0 0 0 3,0+
+B+B-W+W-BW-B+W+W 5 1 1 0 0 4,0/
+W+WW+W-BW-B+W+W 7 1 2 1 0 1,0/ 1,4\
+W+W-BB-WaB+Wa 3 0 1 0 1 1,0\ 
+W+W-BBBB-W+W 7 1 2 0 0 1,0/ 2,5/
+W+W-BBB-WaB+Wa 5 1 2 0 0 1,0/
+W+W-B+BWBB-W+W 5 1 1 0 0 2,2+
+W+WB-WaB+Wa+BB-W+W 9 1 2 1 0 2,1+
+W+WBBB+BWa+B-Wa 7 2 2 1 1 4,1\
+WaB+BWaBBWBWbB+WWb 5 2 1 1 0 0,-1+
+W+W-B+BWa+BWaW-BWW+W 7 1 1 0 1 2,-1+
+W+W-BB+WaW+WBWa 3 1 0 0 1 2,0\
+WaB+WaBB-W+W 3 1 1 0 0 2,0/
+Wa+B-Wa+B-WbW+WWb 5 2 1 0 0 0,-1/
 WaWbB+B+WbB-WaW+W 3 1 0 1 0 1,2\
-WaWbB+B+WbB-WaWc+BWc 3 1 0 1 0 1,2\
-WaWbB+WbBWaB+BBW+W 7 1 2 2 0 3,1+
-WaWbB+WbBWaB+B-W+W 5 1 2 1 0 3,1+
-WaWbB+WbBWaB+B-Wc+BWc 5 1 2 1 0 3,1+
+Wa+BWaB+Wb-B+Wb 5 1 2 1 0 1,0+
+W+W-B+BB-WaB+Wa 5 1 1 0 0 3,2+
+W+WBWBB+BWBWa+BWa 7 1 2 2 1 -3,5/
+WaWb+BB+BWbWaB 7 1 1 3 1 0,3\
+W+W-BWa+BWa 3 1 1 0 0 2,0/
+W+W-BWaWb+B+WbWa 3 1 0 1 0 2,0/
+W+W-BWaWb+BB+WbWa 3 1 0 1 0 2,0/
+W+WWaWb-B+W+WWbWa 5 1 1 0 1 0,-1\
+BWaWbB+B+Wb-BWa 7 3 0 0 1 1,-1/
+W+W-BBBWB+BB-WaWbB+WbWa 7 2 1 0 0 6,2/
+W+WBBWaW+WBWa 5 1 2 1 0 1,0/ 1,3\
+W+W-BWBW+WW+WBWB-W+W 3 1 1 1 0 4,0/ 4,3\
+W+W-BWBW+WW+WBWBWa-B+Wa 3 1 1 1 0 4,0/ 4,3\
+WaB+WaB+B-W+W 5 1 2 1 0 2,0/
+W+WWaWb-B+W+WBB+Wb-BWa 5 1 0 0 1 1,0\
+WaB+WaWbWc-B+W+WBB+Wc-BWb 5 1 0 0 1 2,0\
+WaB+BWaWb-B+Wb 3 1 0 0 1 0,-2+
+Wa+BWa-BB+BBWWb-B+BWb 7 2 1 0 0 3,4+
+W+W-BBWWa-B+BWa 3 1 0 0 0 3,0+
+WaB+WaB-W+W 3 1 1 0 0 2,0/
+W+W-B+Wa-B+BWa 5 1 2 0 0 3,2+
+Wa+B-WaBBW+W 5 0 1 2 0 4,2
+WaB-WbW+WB+W+W-BBWb+B+Wa 5 1 1 1 0 3,2\
+W+WBBWa-B+Wa 5 1 0 0 1 4,-2\
+W+WB+Wa-B+Wa 5 1 2 1 0 1,0/
+WB-W+WWB+B-W+W 5 0 2 1 0 3,-2\
+WaB+WaBWB+B-W+W 5 1 2 1 0 2,0/
+WB-Wa+B-Wa+B+B-W+W 7 0 2 1 0 1,-1\
+Wa-B+Wa-B+Wb-B+Wb 5 0 2 0 0 4,3/
 WaWbBW+WWbWaB+B-W+W 5 1 2 1 0 4,2+
+W+WBB-WaB+Wa+BB 3 1 1 0 0 1,0/
+W+W-B+WaBBWa 7 2 2 0 0 0,-1/
+W+W-B+Wa-B+Wa-B+W 5 3,2/
+W+WBWB+Wa-B+Wa 5 2 1 0 1 0,-1\
+Wa+BB-WaBW+W 3 1 1 0 0 3,1/
+WB+BW-B+BWaB+Wa 7 2 2 1 0 1,-1+
+WaW+WWaBBWb+BWb 5 1 2 1 0 2,4\
+Wa+BWaBWB+BBWBW+W 7 1 2 2 1 1,0+
+WaB+WaB+B-WbWcW+WW+WWcBWb 5 1 2 0 1 2,0/
+W+W-BW+B+BW-BBW+W 5 1 1 1 0 1,4\ 2,0/
+W+B-W+W-B+WB-W+W 7 1 0 0 2 0,-1\
+WaWbB+B+WbB-WaW+B 3 1 0 1 0 1,2\
+W+WBBWBW+W 5 2 1 0 1 0,-1\ 5,-1/
+W+W-BB+WB-B 3 0,-1/
+W+W-WaB-W+B+WWa 5 1 1 1 0 1,0/
+WaB-W+WWaB+B-W+W 5 2 1 0 0 2,-2/
+Wa+B-Wa+BWB-W+W 5 1 0 0 1 2,2+
+Wa+B-Wa+B-W+W 5 1 2 0 1 3,2/
+Wa+B-Wa+B-WbB+Wb 5 1 2 0 1 4,2/
+WB+BWBB+BWa+B-Wa 7 2 2 0 1 4,1\
+W+WBB+BWa+B-Wa 7 2 2 0 1 3,1\
+W+W+B-Wa+B-Wa+B-W+W 5 0 1 1 0 0,1\
+W+WB-W+B+WWa-B+Wa 5 1 1 1 0 1,3\
+WW+B+WW-BWB+B-W+W 5 0 2 0 1 5,2/
+WW+B+WW-BWBWaB+Wa 3 0 1 0 1 5,0+
+WW+B+WW-BWBWa+B-Wa 3 0 0 0 1 4,0/
+Wa-BWb+B+BWbWa 7 1 2 1 0 2,1\
+W+WWaBBWa 5 1 1 0 0 1,0/
+W+WWaBBBWa 5 1 1 0 0 1,0/
+WaWbB+B+WbB-WaWc+BWc 3 1 0 1 0 1,2\
+W+W-BWWa-B+Wa+B 3 1 0 0 0 2,0+
 WaW-WWa+BWbB-Wb 3 0 1 1 0 4,1+
 WaW-WWa+BW-W 3 0 1 1 0 3,1\
-WB+BW-B+BWaB+Wa 7 2 2 1 0 1,-1+
-WB+BWBB+BWa+B-Wa 7 2 2 0 1 4,1\
-WB-W+WWB+B-W+W 5 0 2 1 0 3,-2\
-WB-Wa+B-Wa+B+B-W+W 7 0 2 1 0 1,-1\
-WW+B+WW-BWB+B-W+W 5 0 2 0 1 5,2/
-WW+B+WW-BWBWa+B-Wa 3 0 0 0 1 4,0/
-WW+B+WW-BWBWa+B-Wa 3 1 0 0 0 0,4\
-WW+B+WW-BWBWaB+Wa 3 0 1 0 1 5,0+
+Wa+B-WaWb+BWb 3 1 1 0 1 2,0/
+Wa+B-WaW+W 3 1 1 0 1 2,0/
+W+WB-W+W 3 1 1 0 0 1,0/
+W+WBB-W+W 3 1 1 0 0 1,0/
+Wa+BWaB-W+W 3 1 1 0 0 1,0+
+Wa+BWaBB-W+W 3 1 1 0 0 1,0+
+W+WB-Wa+BWa 3 1 1 0 0 1,0/
+W+BWaB-Wb+BWb 3 1 1 0 0 1,0+
+WaB+BWaB-W+W 3 1 1 0 0 2,0+
+Wa+B-Wa+BWbB+Wb 5 1 2 1 0 2,3+
+W+WWa-B+Wa 3 1 1 0 0 1,0/
+B-WaB-W+B+WWa 3 1 0 0 2 0,-1/
+B-WaBB-W+B+WWa 3 1 0 0 2 0,-1/
+W+WB-WB-WB-W+WW+W 5 1 1 0 0 4,0/
+W+WB-WB-WB-W+WWaB+Wa 5 1 1 0 0 5,0+
+W+WB-WB-WB-W+WWaB+BWa 5 1 1 0 0 5,0+
+W+WB-WB-WB-W+WWa+BWa 5 1 1 0 0 4,0/
+W+W-BB-W+W 3 2 0 0 0 0,-1/ 3,-1\
+WaBBWaWBW+W 5 2 1 0 0 6,-1/
+B+BB+WB-W+W-B 3 0 0 0 0 1,0+
+WaBBBWaW+W 5 2 1 0 0 5,-1/
+WaBBWaW+W 5 2 1 0 0 4,-1/
+WaBWb+B+B-WbWaW 5 2,3\
+W+W-BWBB-W+B 3 1 0 0 0 2,0+ 4,0\
+W+WWaWb-B+B+WbBBa 5 1 1 0 1 0,-1\
+WaBWbW+WW+WWbWa-B+W 5 1 1 1 0 3,2\
+WaBW+WWaBBBW+W 5 2 1 0 1 0,-3/ 5,-3/
+WaBW+WWaBBW+W 5 2 1 0 1 0,-3/ 4,-3/
+W+WBBW+W 5 2 2 0 0 1,0/ 1,3\
+W+WBBWaB+Wa 5 2 2 0 0 1,0/ 1,4+
+Wa+BWaBBWbB+Wb 5 2 2 0 0 1,0+ 1,5+
+WaB+BWaBBW+W 5 2 2 0 0 2,0+ 2,4\
+WaB+BWaBBWbB+BWb 5 2 2 0 0 2,0+ 2,5+
