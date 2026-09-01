@@ -93,16 +93,8 @@ function spawnWorker() {
       return;
     }
     if (d.depth !== undefined) {
-      // Heartbeat (rust478, operator: a 5-minute Two-Machines think looked
-      // hung): every ladder line also refreshes the status text live, so
-      // 'is thinking...' carries depth/score/time even with the output
-      // pane closed. Parse leniently - any line without the fields just
-      // leaves the previous heartbeat standing.
-      const hb = /depth\s+(\d+)\s+score\s+(\S+).*?time\s+(\S+)/.exec(d.depth);
-      if (hb && thinking) {
-        lastThink = ` - depth ${hb[1]}, score ${hb[2]} (${hb[3]})`;
-        if ($('status')) $('status').textContent = statusLine();
-      }
+      // Heartbeat retired (rust485, operator's call: keep the status
+      // line clean - the ladder lives in the output pane, opt-in).
       // One gate for the whole pane: the raw depth/noise/book relay used to
       // be unconditional while headers and 'played' checked the box - an
       // unchecked box produced framing-free ghost streams (field case).
@@ -296,7 +288,7 @@ function statusLine() {
   const side = state.toMove === 'W' ? 'White' : 'Black';
   const who = machineSides().has(state.toMove) ? 'engine' : 'you';
   return thinking
-    ? `Move ${state.moveCount + 1} - ${side} (engine) is thinking\u2026${lastThink}`
+    ? `Move ${state.moveCount + 1} - ${side} (engine) is thinking\u2026`
     : `Move ${state.moveCount + 1} - ${side} to move (${who}).`;
 }
 
