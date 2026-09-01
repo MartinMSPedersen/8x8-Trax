@@ -49,6 +49,7 @@ let state = null;          // last state JSON from the engine
 let preview = null;        // {notation, placed:[{c,r,t,forced}]} or null
 let previewCell = null;    // {c,r,idx} click-cycling anchor
 let thinking = false;
+let lastThink = ''; // live heartbeat: latest 'depth N score S' during a think (rust478)
 let queuedKnowledge = null;
 
 function send(line) {
@@ -92,6 +93,16 @@ function spawnWorker() {
       return;
     }
     if (d.depth !== undefined) {
+      // Heartbeat (rust478, operator: a 5-minute Two-Machines think looked
+      // hung): every ladder line also refreshes the status text live, so
+      // 'is thinking...' carries depth/score/time even with the output
+      // pane closed. Parse leniently - any line without the fields just
+      // leaves the previous heartbeat standing.
+      const hb = /depth\s+(\d+)\s+score\s+(\S+).*?time\s+(\S+)/.exec(d.depth);
+      if (hb && thinking) {
+        lastThink = ` - depth ${hb[1]}, score ${hb[2]} (${hb[3]})`;
+        if ($('status')) $('status').textContent = statusLine();
+      }
       // One gate for the whole pane: the raw depth/noise/book relay used to
       // be unconditional while headers and 'played' checked the box - an
       // unchecked box produced framing-free ghost streams (field case).
@@ -285,7 +296,7 @@ function statusLine() {
   const side = state.toMove === 'W' ? 'White' : 'Black';
   const who = machineSides().has(state.toMove) ? 'engine' : 'you';
   return thinking
-    ? `Move ${state.moveCount + 1} - ${side} (engine) is thinking\u2026`
+    ? `Move ${state.moveCount + 1} - ${side} (engine) is thinking\u2026${lastThink}`
     : `Move ${state.moveCount + 1} - ${side} to move (${who}).`;
 }
 
@@ -476,6 +487,7 @@ async function maybeEngine() {
   // for any future path that reaches here with a preview still on the board.
   if (preview || previewCell) { preview = null; previewCell = null; $('commitbtn').disabled = true; }
   thinking = true;
+  lastThink = '';
   $('status').textContent = statusLine();
   render();
   const time = $('strength').value;
@@ -484,6 +496,7 @@ async function maybeEngine() {
   if ($('optoutput').checked) logEngine(`-- ${state.toMove === 'W' ? 'White' : 'Black'} thinking (${Number(time) / 1000}s) --`);
   const r = await send(`ENGINE ${time} 0 ${noise} ${seed}`);
   thinking = false;
+  lastThink = '';
   onState(r);
   if (!state.over && machineSides().has(state.toMove)) {
     setTimeout(maybeEngine, 150); // Two Machines: breathe between moves
