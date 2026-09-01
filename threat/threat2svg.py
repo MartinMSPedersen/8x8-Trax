@@ -170,7 +170,8 @@ def main():
 
     renderer = ThreatRenderer()
     renderer.parse(prog)
-    print(renderer.generate_svg(caption))
+    #print(renderer.generate_svg(caption))
+    print(renderer.generate_svg(data))
 
 
 if __name__ == "__main__":
