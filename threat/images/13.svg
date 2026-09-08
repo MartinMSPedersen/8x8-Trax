@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 183 192" width="183" height="192">
+  <path d="M 49 29 L 61 29 L 61 35 L 67 35 L 67 29 L 79 29 L 91 29 L 91 35 L 97 35 L 97 29 L 109 29 L 121 29 L 121 35 L 127 35 L 127 29 L 139 29 L 139 41 L 133 41 L 133 47 L 139 47 L 139 59 L 139 71 L 133 71 L 133 77 L 139 77 L 139 89 L 139 101 L 133 101 L 133 107 L 139 107 L 139 119 L 139 131 L 133 131 L 133 137 L 139 137 L 139 149 L 127 149 L 127 143 L 121 143 L 121 149 L 109 149 L 109 161 L 103 161 L 103 167 L 109 167 L 109 179 L 97 179 L 97 173 L 91 173 L 91 179 L 79 179" fill="none" stroke="black" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/>
+  <line x1="121" y1="29" x2="127" y2="35" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="121" y1="35" x2="127" y2="29" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="139" y1="71" x2="133" y2="77" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="133" y1="71" x2="139" y2="77" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="139" y1="131" x2="133" y2="137" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="133" y1="131" x2="139" y2="137" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="127" y1="149" x2="121" y2="143" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="127" y1="143" x2="121" y2="149" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="48.625" y1="26" x2="48.625" y2="32" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="38" y1="29" x2="46" y2="29" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="42" y1="26" x2="46" y2="29" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="42" y1="32" x2="46" y2="29" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="79" y1="26" x2="79" y2="32" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="109" y1="26" x2="109" y2="32" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="142" y1="59" x2="136" y2="59" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="142" y1="89" x2="136" y2="89" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="142" y1="119" x2="136" y2="119" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="78.625" y1="182" x2="78.625" y2="176" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <text x="64" y="24" font-size="6" font-family="monospace" text-anchor="middle" dominant-baseline="middle">a</text>
+  <text x="94" y="24" font-size="6" font-family="monospace" text-anchor="middle" dominant-baseline="middle">b</text>
+  <text x="144" y="44" font-size="6" font-family="monospace" text-anchor="middle" dominant-baseline="middle">b</text>
+  <text x="144" y="104" font-size="6" font-family="monospace" text-anchor="middle" dominant-baseline="middle">a</text>
+  <text x="91.5" y="14" font-size="8" font-family="monospace" text-anchor="middle" dominant-baseline="middle">WaWbB+WbBWaB+B-W+W 5 1 2 1 0 3,1+
+</text>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 159 188" width="159" height="188">
+  <path d="M 52 27 L 64 27 L 64 33 L 70 33 L 70 27 L 82 27 L 82 39 L 76 39 L 76 45 L 82 45 L 82 57 L 82 69 L 76 69 L 76 75 L 82 75 L 82 87 L 82 99 L 76 99 L 76 105 L 82 105 L 82 117 L 94 117 L 94 123 L 100 123 L 100 117 L 112 117 L 112 129 L 106 129 L 106 135 L 112 135 L 112 147 L 112 159 L 106 159 L 106 165 L 112 165 L 112 177" fill="none" stroke="black" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/>
+  <line x1="82" y1="39" x2="76" y2="45" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="76" y1="39" x2="82" y2="45" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="82" y1="99" x2="76" y2="105" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="76" y1="99" x2="82" y2="105" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="112" y1="129" x2="106" y2="135" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="106" y1="129" x2="112" y2="135" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="51.625" y1="24" x2="51.625" y2="30" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="41" y1="27" x2="49" y2="27" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="45" y1="24" x2="49" y2="27" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="45" y1="30" x2="49" y2="27" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="85" y1="57" x2="79" y2="57" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="85" y1="87" x2="79" y2="87" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="115" y1="147" x2="109" y2="147" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="115" y1="177.375" x2="109" y2="177.375" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <text x="87" y="72" font-size="6" font-family="monospace" text-anchor="middle" dominant-baseline="middle">a</text>
+  <text x="97" y="112" font-size="6" font-family="monospace" text-anchor="middle" dominant-baseline="middle">b</text>
+  <text x="117" y="162" font-size="6" font-family="monospace" text-anchor="middle" dominant-baseline="middle">b</text>
+  <text x="79.5" y="14" font-size="8" font-family="monospace" text-anchor="middle" dominant-baseline="middle">W+BWaB-Wb+BWb 3 1 1 0 0 1,0+
+</text>
+</svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 168 98" width="168" height="98">
+  <path d="M 27 27 L 39 27 L 39 33 L 45 33 L 45 27 L 57 27 L 57 39 L 51 39 L 51 45 L 57 45 L 57 57 L 69 57 L 69 63 L 75 63 L 75 57 L 87 57 L 99 57 L 99 63 L 105 63 L 105 57 L 117 57 L 117 45 L 123 45 L 123 39 L 117 39 L 117 27 L 129 27 L 129 33 L 135 33 L 135 27 L 147 27 L 147 39 L 141 39 L 141 45 L 147 45 L 147 57 L 147 69 L 141 69 L 141 75 L 147 75 L 147 87" fill="none" stroke="black" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/>
+  <line x1="99" y1="57" x2="105" y2="63" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="99" y1="63" x2="105" y2="57" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="129" y1="27" x2="135" y2="33" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="129" y1="33" x2="135" y2="27" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="26.625" y1="24" x2="26.625" y2="30" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="16" y1="27" x2="24" y2="27" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="20" y1="24" x2="24" y2="27" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="20" y1="30" x2="24" y2="27" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="87" y1="54" x2="87" y2="60" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="150" y1="57" x2="144" y2="57" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="150" y1="87.375" x2="144" y2="87.375" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <text x="72" y="52" font-size="6" font-family="monospace" text-anchor="middle" dominant-baseline="middle">a</text>
+  <text x="152" y="72" font-size="6" font-family="monospace" text-anchor="middle" dominant-baseline="middle">a</text>
+  <text x="84" y="14" font-size="8" font-family="monospace" text-anchor="middle" dominant-baseline="middle">W+W-WaB-W+B+WWa 5 1 1 1 0 1,0/
+</text>
+</svg>

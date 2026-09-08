@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 178 192" width="178" height="192">
+  <path d="M 62 29 L 74 29 L 74 35 L 80 35 L 80 29 L 92 29 L 104 29 L 104 35 L 110 35 L 110 29 L 122 29 L 122 41 L 116 41 L 116 47 L 122 47 L 122 59 L 122 71 L 116 71 L 116 77 L 122 77 L 122 89 L 122 101 L 116 101 L 116 107 L 122 107 L 122 119 L 122 131 L 116 131 L 116 137 L 122 137 L 122 149 L 122 161 L 116 161 L 116 167 L 122 167 L 122 179 L 110 179 L 110 173 L 104 173 L 104 179 L 92 179" fill="none" stroke="black" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/>
+  <line x1="104" y1="29" x2="110" y2="35" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="104" y1="35" x2="110" y2="29" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="122" y1="41" x2="116" y2="47" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="116" y1="41" x2="122" y2="47" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="122" y1="101" x2="116" y2="107" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="116" y1="101" x2="122" y2="107" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="122" y1="131" x2="116" y2="137" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="116" y1="131" x2="122" y2="137" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="61.625" y1="26" x2="61.625" y2="32" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="51" y1="29" x2="59" y2="29" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="55" y1="26" x2="59" y2="29" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="55" y1="32" x2="59" y2="29" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="92" y1="26" x2="92" y2="32" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="125" y1="59" x2="119" y2="59" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="125" y1="89" x2="119" y2="89" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="125" y1="119" x2="119" y2="119" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="125" y1="149" x2="119" y2="149" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="91.625" y1="182" x2="91.625" y2="176" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <text x="77" y="24" font-size="6" font-family="monospace" text-anchor="middle" dominant-baseline="middle">a</text>
+  <text x="127" y="74" font-size="6" font-family="monospace" text-anchor="middle" dominant-baseline="middle">a</text>
+  <text x="89" y="14" font-size="8" font-family="monospace" text-anchor="middle" dominant-baseline="middle">WaB+BWaBBW+W 5 2 2 0 0 2,0+ 2,4\
+</text>
+</svg>

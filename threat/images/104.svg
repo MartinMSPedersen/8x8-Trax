@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 135 128" width="135" height="128">
+  <path d="M 41 27 L 53 27 L 53 33 L 59 33 L 59 27 L 71 27 L 71 39 L 65 39 L 65 45 L 71 45 L 71 57 L 71 69 L 65 69 L 65 75 L 71 75 L 71 87 L 83 87 L 83 93 L 89 93 L 89 87 L 101 87 L 101 99 L 95 99 L 95 105 L 101 105 L 101 117" fill="none" stroke="black" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/>
+  <line x1="71" y1="69" x2="65" y2="75" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="65" y1="69" x2="71" y2="75" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="40.625" y1="24" x2="40.625" y2="30" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="30" y1="27" x2="38" y2="27" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="34" y1="24" x2="38" y2="27" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="34" y1="30" x2="38" y2="27" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="74" y1="57" x2="68" y2="57" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="104" y1="117.375" x2="98" y2="117.375" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <text x="67.5" y="14" font-size="8" font-family="monospace" text-anchor="middle" dominant-baseline="middle">W+WB-W+W 3 1 1 0 0 1,0/
+</text>
+</svg>

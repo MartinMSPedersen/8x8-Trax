@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 188" width="140" height="188">
+  <path d="M 58 27 L 70 27 L 70 33 L 76 33 L 76 27 L 88 27 L 88 39 L 82 39 L 82 45 L 88 45 L 88 57 L 88 69 L 82 69 L 82 75 L 88 75 L 88 87 L 88 99 L 82 99 L 82 105 L 88 105 L 88 117 L 88 129 L 82 129 L 82 135 L 88 135 L 88 147 L 88 159 L 82 159 L 82 165 L 88 165 L 88 177" fill="none" stroke="black" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/>
+  <line x1="88" y1="99" x2="82" y2="105" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="82" y1="99" x2="88" y2="105" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="88" y1="129" x2="82" y2="135" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="82" y1="129" x2="88" y2="135" stroke="black" stroke-width="1.5" stroke-linecap="square"/>
+  <line x1="57.625" y1="24" x2="57.625" y2="30" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="47" y1="27" x2="55" y2="27" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="51" y1="24" x2="55" y2="27" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="51" y1="30" x2="55" y2="27" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="91" y1="57" x2="85" y2="57" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="91" y1="87" x2="85" y2="87" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="91" y1="117" x2="85" y2="117" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="91" y1="147" x2="85" y2="147" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <line x1="91" y1="177.375" x2="85" y2="177.375" stroke="black" stroke-width="0.75" stroke-linecap="square"/>
+  <text x="93" y="72" font-size="6" font-family="monospace" text-anchor="middle" dominant-baseline="middle">a</text>
+  <text x="93" y="162" font-size="6" font-family="monospace" text-anchor="middle" dominant-baseline="middle">a</text>
+  <text x="70" y="14" font-size="8" font-family="monospace" text-anchor="middle" dominant-baseline="middle">W+WWaBBWa 5 1 1 0 0 1,0/
+</text>
+</svg>
