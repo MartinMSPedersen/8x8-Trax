@@ -337,8 +337,13 @@ function showErr(msg) { $('moveerr').textContent = msg || ''; }
 
 let engineBuild = '';
 function knowledgeLine(d) {
+  // Skipped book lines name themselves (file:line) so the curator can
+  // `vim +N` straight from the footer instead of hunting a bare count.
+  const skipped = (d.bookSkippedLines || []).length
+    ? ` \u00b7 skipped: ${d.bookSkippedLines.join('; ')}` : (d.bookSkipped ? ` \u00b7 ${d.bookSkipped} book line(s) skipped` : '');
   return `${d.threats} threat patterns, ${d.book} book positions`
     + (d.replies ? `, ${d.replies} replies` : '')
+    + skipped
     + (engineBuild ? ` \u00b7 engine ${engineBuild}` : '');
 }
 // Refresh the footer from the ACTIVE session - counts are per variant (each
